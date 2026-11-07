@@ -1,19 +1,30 @@
 import { Link, Redirect, router } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
 import { ErrorText, FieldLabel, Segmented, TextField } from '@/components/Form';
 import { signOut, useAuth } from '@/lib/auth';
 import { deleteMyAccount, updateProfile, type Units } from '@/lib/entry';
+import { getBlocked, unblockUser } from '@/lib/luvballs';
 import { useProfile } from '@/lib/profile';
 import { colors, fonts } from '@/lib/theme';
 
 export default function Account() {
   const { session, loading } = useAuth();
   const { profile, setProfile } = useProfile();
+  const [blocked, setBlocked] = useState<{ user_id: string; first_name: string }[]>([]);
   const [unitsError, setUnitsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (session) getBlocked().then(setBlocked).catch(() => setBlocked([]));
+  }, [session]);
+
+  const unblock = async (id: string) => {
+    await unblockUser(id).catch(() => undefined);
+    setBlocked(await getBlocked().catch(() => blocked));
+  };
   const [confirming, setConfirming] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -67,6 +78,22 @@ export default function Account() {
       ) : null}
 
       <View style={styles.block}>
+        <FieldLabel hint={blocked.length ? `${blocked.length}` : undefined}>Blocked people</FieldLabel>
+        {blocked.length === 0 ? (
+          <Text style={styles.body}>You haven't blocked anyone. You can block or report people from their Entry.</Text>
+        ) : (
+          blocked.map((b) => (
+            <View key={b.user_id} style={styles.blockedRow}>
+              <Text style={styles.blockedName}>{b.first_name}</Text>
+              <Pressable accessibilityRole="button" onPress={() => unblock(b.user_id)}>
+                <Text style={styles.link}>Unblock</Text>
+              </Pressable>
+            </View>
+          ))
+        )}
+      </View>
+
+      <View style={styles.block}>
         <Link href="/privacy" style={styles.link}>Privacy Policy</Link>
         <Link href="/terms" style={styles.link}>Terms of Service</Link>
       </View>
@@ -109,6 +136,8 @@ const styles = StyleSheet.create({
   email: { fontFamily: fonts.bodySemi, fontSize: 15, color: colors.ink, marginTop: 6 },
   block: { marginTop: 20, gap: 8 },
   link: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.luvRed, textDecorationLine: 'underline' },
+  blockedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.white, borderRadius: 10, padding: 10, borderWidth: 2, borderColor: colors.screenEdge },
+  blockedName: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink },
   danger: { padding: 14, borderRadius: 12, borderWidth: 2, borderColor: colors.luvRed, backgroundColor: colors.cream },
   dangerTitle: { fontFamily: fonts.bodyHeavy, fontSize: 18, color: colors.luvRed },
   body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.ink, marginBottom: 4 },

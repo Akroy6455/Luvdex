@@ -46,6 +46,12 @@ export type OtherEntry = EntryView & {
   id: string;
   distance_band: DistanceBand | null;
   in_range: boolean;
+  /** Was within 50 m in the last 10 minutes (grace window), but isn't now. */
+  grace: boolean;
+  /** Your own GPS is precise enough (≤ 75 m) to throw. */
+  gps_ok: boolean;
+  thrown_by_me: boolean;
+  match_id: string | null;
   photos: { id: string; storage_path: string; position: number; url: string | null }[];
 };
 

@@ -4,12 +4,14 @@ import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'rea
 
 import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
+import { MatchCelebration } from '@/components/MatchCelebration';
 import { RadarMap } from '@/components/RadarMap';
 import { useAuth } from '@/lib/auth';
 import { LOOKING_FOR, labelOf, lookingForColor, updateProfile } from '@/lib/entry';
 import { useProfile } from '@/lib/profile';
 import { BAND_LABEL, type NearbyPerson } from '@/lib/radar';
 import { colors, fonts } from '@/lib/theme';
+import { useNotifications } from '@/lib/useNotifications';
 import { useRadar } from '@/lib/useRadar';
 
 export default function Radar() {
@@ -17,6 +19,7 @@ export default function Radar() {
   const { profile, loading: profileLoading, setProfile } = useProfile();
   const ghost = !!profile?.is_paused;
   const radar = useRadar({ enabled: !!profile?.onboarding_done && !ghost });
+  const notes = useNotifications(!!profile?.onboarding_done);
   const [ghostBusy, setGhostBusy] = useState(false);
 
   if (!loading && !session) return <Redirect href="/welcome" />;
@@ -40,20 +43,24 @@ export default function Radar() {
       lensOn={inRange}
       footer={
         <View style={styles.navRow}>
+          <NavButton label="Luvballs" badge={notes.unreadLuvballs} onPress={() => router.push('/luvballs')} />
+          <NavButton label="Caught" onPress={() => router.push('/caught')} />
           <NavButton label="My Entry" onPress={() => router.push('/me')} />
-          <NavButton label="Scanner" onPress={() => router.push('/scanner')} />
-          <NavButton label="Visibility" onPress={() => router.push('/visibility')} />
         </View>
       }
     >
       <View style={styles.header}>
-        <Text style={styles.kicker}>RADAR · 500 M</Text>
-        {radar.status === 'active' ? (
-          <Text style={styles.kicker}>
-            {radar.people.length}/5 NEARBY
-            {radar.lastUpdated ? ` · ${radar.lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
-          </Text>
-        ) : null}
+        <Text style={styles.kicker}>
+          RADAR · {radar.status === 'active' ? `${radar.people.length}/5 NEARBY` : '500 M'}
+        </Text>
+        <View style={styles.headerLinks}>
+          <Pressable accessibilityRole="button" onPress={() => router.push('/scanner')}>
+            <Text style={styles.headerLink}>Scanner</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" onPress={() => router.push('/visibility')}>
+            <Text style={styles.headerLink}>{ghost ? '👻 Ghost' : 'Visibility'}</Text>
+          </Pressable>
+        </View>
       </View>
 
       {radar.status === 'active' || radar.status === 'low_accuracy' ? (
@@ -84,6 +91,18 @@ export default function Radar() {
           </View>
         )
       ) : null}
+
+      <MatchCelebration
+        visible={!!notes.pendingMatch}
+        name={notes.pendingMatch?.payload.name ?? 'Someone'}
+        onView={() => {
+          const m = notes.pendingMatch;
+          if (!m) return;
+          notes.dismiss([m.id]);
+          if (m.payload.user_id) router.push({ pathname: '/entry/[id]', params: { id: m.payload.user_id } });
+        }}
+        onClose={() => notes.pendingMatch && notes.dismiss([notes.pendingMatch.id])}
+      />
     </DeviceFrame>
   );
 }
@@ -179,7 +198,7 @@ function PersonCard({ person, onPress }: { person: NearbyPerson; onPress: () => 
           <Text style={styles.badgeText}>{labelOf(LOOKING_FOR, person.looking_for).toUpperCase()}</Text>
         </View>
         <Text style={[styles.band, person.in_range && styles.bandInRange]}>
-          {person.in_range ? '♥ In Luvball range' : BAND_LABEL[person.distance_band]}
+          {person.in_range ? '♥ Luvball ready: tap to throw' : BAND_LABEL[person.distance_band]}
         </Text>
       </View>
       <Text style={styles.chevron}>›</Text>
@@ -187,16 +206,25 @@ function PersonCard({ person, onPress }: { person: NearbyPerson; onPress: () => 
   );
 }
 
-function NavButton({ label, onPress }: { label: string; onPress: () => void }) {
+function NavButton({ label, onPress, badge }: { label: string; onPress: () => void; badge?: number }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.nav, pressed && { opacity: 0.8 }]}>
       <Text style={styles.navText}>{label}</Text>
+      {badge ? (
+        <View style={styles.navBadge}>
+          <Text style={styles.navBadgeText}>{badge > 9 ? '9+' : badge}</Text>
+        </View>
+      ) : null}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  headerLinks: { flexDirection: 'row', gap: 14 },
+  headerLink: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.luvRed, textDecorationLine: 'underline' },
+  navBadge: { position: 'absolute', top: -6, right: -2, minWidth: 22, height: 22, borderRadius: 11, backgroundColor: colors.lensPink, borderWidth: 2, borderColor: colors.white, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  navBadgeText: { fontFamily: fonts.bodyHeavy, fontSize: 11, color: colors.white },
   kicker: { fontFamily: fonts.pixel, fontSize: 11, color: colors.inkSoft, letterSpacing: 1 },
   panel: { marginTop: 14, padding: 14, borderRadius: 12, backgroundColor: colors.cream, borderWidth: 2, borderColor: colors.screenEdge, gap: 10 },
   panelTitle: { fontFamily: fonts.bodyHeavy, fontSize: 18, color: colors.ink },
