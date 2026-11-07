@@ -302,7 +302,7 @@ Every table has **Row Level Security** turned on, meaning the database itself re
 ## 8. Core server logic
 
 **`update_location(lat, lng, accuracy)`**: called every ~30 s or after moving ~25 m while the Radar is open.
-- Ignore readings with accuracy worse than 150 m.
+- Rough readings are used as if exact (owner decision, 8 Nov 2026); the Radar shows an "approximate location" tip above 150 m. Limits are settings (`location_max_accuracy_m`, `throw_gps_max_m`) and can be tightened again.
 - Reject "teleports" (implied speed above ~200 km/h since the last update) and flag the account if it keeps happening.
 - At most one update every 10 seconds.
 - Save **only** the latest point, and refresh `encounters` for anyone now within 50 m.
@@ -426,7 +426,7 @@ You do the account setup and dashboard clicks; I write and configure the code. S
 - [ ] Privacy Policy, Terms, Community Guidelines and a contact email are live
 - [ ] Maps key restricted; budget alerts on; Supabase on the Pro plan (the free plan pauses inactive projects)
 - [x] Throw range back to **50 m** (was 400 m for testing; restored 7 Nov 2026)
-- [x] Thrower GPS limit back to **75 m** (was 150 m for testing; restored 7 Nov 2026)
+- [x] Thrower GPS limit: **removed** on 8 Nov 2026 by owner decision (rough locations allowed); was 75 m. See ADMIN_GUIDE §5 to make it strict again
 - [ ] Sentry receiving errors; PostHog counting sign-ups
 
 **Phone apps (later)**

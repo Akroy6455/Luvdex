@@ -16,6 +16,13 @@ import { colors, fonts } from '@/lib/theme';
 import { useNotifications } from '@/lib/useNotifications';
 import { useRadar } from '@/lib/useRadar';
 
+/** Above this, the Radar still works but shows a gentle "approximate location" tip. */
+const ROUGH_TIP_AFTER_M = 150;
+
+function formatAccuracy(m: number) {
+  return m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`;
+}
+
 export default function Radar() {
   const { session, loading } = useAuth();
   const { profile, loading: profileLoading, setProfile } = useProfile();
@@ -104,6 +111,13 @@ export default function Radar() {
 
       {radar.status === 'active' || radar.status === 'low_accuracy' ? (
         <RadarMap me={radar.me} people={radar.people} onSelect={open} />
+      ) : null}
+
+      {radar.status === 'active' && radar.me && radar.me.accuracy > ROUGH_TIP_AFTER_M ? (
+        <Text style={styles.roughTip}>
+          {`📍 Your location is approximate (about ${formatAccuracy(radar.me.accuracy)}), so distances may be off. ` +
+            'For the best results, turn on Precise Location for your browser or the Luvdex app.'}
+        </Text>
       ) : null}
 
       <StatusPanel
@@ -293,6 +307,16 @@ function NavButton({ label, onPress, badge }: { label: string; onPress: () => vo
 }
 
 const styles = StyleSheet.create({
+  roughTip: {
+    marginTop: 8,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#FFFBEA',
+    fontFamily: fonts.body,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.inkSoft,
+  },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   headerLinks: { flexDirection: 'row', gap: 14 },
   contestBanner: { marginBottom: 10, padding: 12, borderRadius: 12, backgroundColor: colors.ink, gap: 4 },

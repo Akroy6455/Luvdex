@@ -127,15 +127,22 @@ select private.reset_review_world();
 ```
 Demo Entries are named "… (demo)" and are only ever visible to reviewer accounts. They show up in the database counts in §4, so subtract 8 from `entries`.
 
-## 5. Testing settings (restore before launch!)
+## 5. Location and throwing settings
 ```sql
 select key, value from private.settings;
 ```
-**Restore launch values:**
+| Setting | Now | Meaning |
+|---|---|---|
+| `throw_range_m` | 50 | How close (metres) you must be to throw a Luvball |
+| `location_max_accuracy_m` | 100000 | Roughest location the Radar accepts. 100000 = any location is used as if exact (owner decision, 8 Nov 2026) |
+| `throw_gps_max_m` | 100000 | Roughest location you can throw from. 100000 = no limit (owner decision, 8 Nov 2026) |
+
+**Make it strict again** (only if rough locations cause problems, e.g. people throwing from far away):
 ```sql
-update private.settings set value = '50' where key = 'throw_range_m';
-update private.settings set value = '75' where key = 'throw_gps_max_m';
+update private.settings set value = '150' where key = 'location_max_accuracy_m';
+update private.settings set value = '75'  where key = 'throw_gps_max_m';
 ```
+If you loosen `throw_range_m` for a test, set it back to 50 afterwards.
 
 ## 6. Account deletion requests by email
 The public page **www.luvdex.com/delete-account** explains the options (Google Play links to it). If someone emails sales@solutionandnetwork.com asking to delete their account, ask them to use **Account & settings → Delete account** in the app (it removes photos, data and login). If they can't sign in, find them by email:

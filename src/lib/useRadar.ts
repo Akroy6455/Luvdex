@@ -32,7 +32,6 @@ type Fix = { coords: { latitude: number; longitude: number; accuracy: number | n
 const SEND_EVERY_MS = 30_000;
 const SEND_AFTER_MOVING_M = 25;
 const REFRESH_EVERY_MS = 20_000;
-const MAX_ACCURACY_M = 150;
 const SLOW_AFTER_MS = 15_000;
 
 const isWeb = Platform.OS === 'web';
@@ -92,10 +91,7 @@ export function useRadar({ enabled }: { enabled: boolean }) {
       const accuracy = pos.coords.accuracy ?? 9999;
       const next = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy };
       setMe(next);
-      if (accuracy > MAX_ACCURACY_M) {
-        setStatus('low_accuracy');
-        return;
-      }
+      // Rough locations are used as they are (owner decision, 8 Nov 2026); the Radar shows a tip.
       setStatus('active');
 
       const prev = lastSent.current;
