@@ -153,7 +153,7 @@ export function validateBody(d: EntryDraft): string | null {
   if (!height_cm || height_cm < HEIGHT_RANGE.min || height_cm > HEIGHT_RANGE.max)
     return d.units === 'metric'
       ? `Please enter a height between ${HEIGHT_RANGE.min} and ${HEIGHT_RANGE.max} cm.`
-      : 'Please enter a height between 3′11″ and 7′7″.';
+      : `Please enter a height between 3'11" and 7'7".`;
   if (d.units === 'imperial' && Number(d.heightIn || 0) > 11) return 'Inches must be between 0 and 11.';
   if (!weight_kg || weight_kg < WEIGHT_RANGE.min || weight_kg > WEIGHT_RANGE.max)
     return d.units === 'metric'

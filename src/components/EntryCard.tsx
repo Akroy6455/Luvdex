@@ -5,7 +5,7 @@ import {
   EDUCATION,
   HABITS,
   LOOKING_FOR,
-  formatHeight,
+  formatHeightBoth,
   formatWeight,
   labelOf,
   lookingForColor,
@@ -38,7 +38,7 @@ export function EntryCard({
   const education = [labelOf(EDUCATION, profile.education_level), profile.school].filter(Boolean).join(', ');
 
   const stats: [string, string][] = [
-    ['HEIGHT', formatHeight(profile.height_cm, units)],
+    ['HEIGHT', formatHeightBoth(profile.height_cm, units)],
     ['WEIGHT', formatWeight(profile.weight_kg, units)],
   ];
   if (education) stats.push(['EDUCATION', education]);

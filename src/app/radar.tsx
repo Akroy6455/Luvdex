@@ -9,7 +9,7 @@ import { RadarMap } from '@/components/RadarMap';
 import { useAuth } from '@/lib/auth';
 import { LOOKING_FOR, labelOf, lookingForColor, updateProfile } from '@/lib/entry';
 import { useProfile } from '@/lib/profile';
-import { BAND_LABEL, type NearbyPerson } from '@/lib/radar';
+import { BAND_LABEL, clearMyLocation, type NearbyPerson } from '@/lib/radar';
 import { colors, fonts } from '@/lib/theme';
 import { useNotifications } from '@/lib/useNotifications';
 import { useRadar } from '@/lib/useRadar';
@@ -28,15 +28,19 @@ export default function Radar() {
   const open = (id: string) => router.push({ pathname: '/entry/[id]', params: { id } });
   const inRange = radar.people.some((p) => p.in_range);
 
-  const leaveGhostMode = async () => {
+  /** Pause = Ghost mode: hidden from everyone, location removed from the server straight away. */
+  const setPaused = async (paused: boolean) => {
     if (!session) return;
     setGhostBusy(true);
     try {
-      setProfile(await updateProfile(session.user.id, { is_paused: false }));
+      const saved = await updateProfile(session.user.id, { is_paused: paused });
+      if (paused) await clearMyLocation().catch(() => undefined);
+      setProfile(saved);
     } finally {
       setGhostBusy(false);
     }
   };
+  const leaveGhostMode = () => setPaused(false);
 
   return (
     <DeviceFrame
@@ -58,10 +62,23 @@ export default function Radar() {
             <Text style={styles.headerLink}>Scanner</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={() => router.push('/visibility')}>
-            <Text style={styles.headerLink}>{ghost ? '👻 Ghost' : 'Visibility'}</Text>
+            <Text style={styles.headerLink}>Visibility</Text>
           </Pressable>
         </View>
       </View>
+
+      {!ghost ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Pause discovery"
+          onPress={() => setPaused(true)}
+          disabled={ghostBusy}
+          style={({ pressed }) => [styles.pausePill, (pressed || ghostBusy) && { opacity: 0.7 }]}
+        >
+          <Text style={styles.pauseText}>{ghostBusy ? 'Pausing…' : '⏸  Pause discovery'}</Text>
+          <Text style={styles.pauseHint}>Hide me and stop using my location</Text>
+        </Pressable>
+      ) : null}
 
       {radar.status === 'active' || radar.status === 'low_accuracy' ? (
         <RadarMap me={radar.me} people={radar.people} onSelect={open} />
@@ -163,9 +180,12 @@ function StatusPanel({
     case 'ghost':
       return (
         <View style={styles.panel}>
-          <Text style={styles.panelTitle}>👻 Ghost mode is on</Text>
-          <Text style={styles.body}>Nobody can see you, and you can't see anyone.</Text>
-          <ShellButton label="Turn off Ghost mode" onPress={onLeaveGhost} busy={ghostBusy} />
+          <Text style={styles.panelTitle}>⏸ Discovery paused</Text>
+          <Text style={styles.body}>
+            You're hidden: nobody can see you and you can't see anyone. Luvdex isn't using your location, and your last
+            position has been deleted. Your matches and Luvballs are kept.
+          </Text>
+          <ShellButton label="▶  Resume discovery" onPress={onLeaveGhost} busy={ghostBusy} />
         </View>
       );
     case 'error':
@@ -222,6 +242,22 @@ function NavButton({ label, onPress, badge }: { label: string; onPress: () => vo
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   headerLinks: { flexDirection: 'row', gap: 14 },
+  pausePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    columnGap: 8,
+    alignSelf: 'stretch',
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.screenEdge,
+  },
+  pauseText: { fontFamily: fonts.bodyHeavy, fontSize: 14, color: colors.ink },
+  pauseHint: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft },
   headerLink: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.luvRed, textDecorationLine: 'underline' },
   navBadge: { position: 'absolute', top: -6, right: -2, minWidth: 22, height: 22, borderRadius: 11, backgroundColor: colors.lensPink, borderWidth: 2, borderColor: colors.white, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   navBadgeText: { fontFamily: fonts.bodyHeavy, fontSize: 11, color: colors.white },

@@ -119,11 +119,15 @@ export const ftInToCm = (ft: number, inch: number) => Math.round((ft * 12 + inch
 export const kgToLb = (kg: number) => Math.round(kg * 2.20462);
 export const lbToKg = (lb: number) => Math.round(lb / 2.20462);
 
-export const formatHeight = (cm: number, units: Units) => {
-  if (units === 'metric') return `${cm} cm`;
+/** Feet and inches with plain ' and " (prime symbols don't render in every font), e.g. 5'9". */
+export const formatFeet = (cm: number) => {
   const { ft, inch } = cmToFtIn(cm);
-  return `${ft}′${inch}″`;
+  return `${ft}'${inch}"`;
 };
+export const formatHeight = (cm: number, units: Units) => (units === 'metric' ? `${cm} cm` : formatFeet(cm));
+/** Both units, your preferred one first, e.g. "185 cm (6'1")" or "6'1" (185 cm)". */
+export const formatHeightBoth = (cm: number, units: Units) =>
+  units === 'metric' ? `${cm} cm (${formatFeet(cm)})` : `${formatFeet(cm)} (${cm} cm)`;
 export const formatWeight = (kg: number, units: Units) => (units === 'metric' ? `${kg} kg` : `${kgToLb(kg)} lb`);
 
 export const HEIGHT_RANGE = { min: 120, max: 230 };

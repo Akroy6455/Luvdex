@@ -72,11 +72,11 @@ export default function Visibility() {
       </Text>
 
       <View style={formStyles.group}>
-        <FieldLabel>Ghost mode</FieldLabel>
+        <FieldLabel>Discovery</FieldLabel>
         <Segmented
           options={[
-            { value: 'off', label: 'Visible' },
-            { value: 'on', label: '👻 Ghost' },
+            { value: 'off', label: '▶ On' },
+            { value: 'on', label: '⏸ Paused' },
           ]}
           value={ghost ? 'on' : 'off'}
           onChange={(v) => setGhost(v === 'on')}
