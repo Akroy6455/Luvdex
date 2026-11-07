@@ -9,7 +9,13 @@
 >   - Your **Callback URL** (needed in Part D): `https://ydbbqtvobahlnmgavdbo.supabase.co/auth/v1/callback`
 >   - Google provider page (Part E): https://supabase.com/dashboard/project/ydbbqtvobahlnmgavdbo/auth/providers
 >   - URL Configuration page (Part E): https://supabase.com/dashboard/project/ydbbqtvobahlnmgavdbo/auth/url-configuration
-> - ⏳ **Still yours:** Part B (create the empty GitHub repo), Part D (Google Cloud), Part E (paste the Google values into Supabase), and in Part F only "give Vercel access to GitHub". Claude can then create the Vercel project and its settings.
+> - ✅ **Part B:** the code is on GitHub at https://github.com/Akroy6455/Luvdex (public, as you chose).
+> - ✅ **Part F:** the site is live at **https://luvdex.vercel.app** with its Supabase settings, and it deploys automatically on every push to `main`.
+> - ⏳ **Still yours: Part D (Google Cloud) and Part E (Supabase Google provider).** As of the last check, Supabase answers "provider is not enabled". Use these values:
+>   - Google client → Authorized JavaScript origins: `https://luvdex.vercel.app` and `http://localhost:8081`
+>   - Google client → Authorized redirect URIs: `https://ydbbqtvobahlnmgavdbo.supabase.co/auth/v1/callback`
+>   - Supabase URL Configuration → Site URL: `https://luvdex.vercel.app`
+>   - Supabase URL Configuration → Redirect URLs: `https://luvdex.vercel.app/**`, `https://luvdex-*.vercel.app/**`, `http://localhost:8081/**`
 
 Work through the parts in order. Whenever a part says **→ Tell Claude**, come back to the chat and paste what it asks for.
 

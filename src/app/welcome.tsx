@@ -10,9 +10,9 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 
 export default function Welcome() {
-  const { session } = useAuth();
+  const { session, authError } = useAuth();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(authError);
 
   if (session) return <Redirect href="/home" />;
 

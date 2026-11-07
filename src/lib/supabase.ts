@@ -9,6 +9,23 @@ const key = process.env.EXPO_PUBLIC_SUPABASE_KEY;
 
 export const isSupabaseConfigured = Boolean(url && key);
 
+/**
+ * On web, a failed Google sign-in comes back as ?error_description=... (or in the #hash).
+ * Read it now, before the Supabase client and the router tidy the address bar.
+ */
+function readRedirectError(): string | null {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+  const query = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const message = query.get('error_description') ?? hash.get('error_description');
+  if (!message) return null;
+  console.warn('Sign-in failed:', message);
+  window.history.replaceState(null, '', window.location.pathname);
+  return "Sign-in didn't finish. Please try again. If it keeps happening, the Google login setup needs checking.";
+}
+
+export const initialAuthError = readRedirectError();
+
 export const supabase: SupabaseClient | null = isSupabaseConfigured
   ? createClient(url!, key!, {
       auth: {

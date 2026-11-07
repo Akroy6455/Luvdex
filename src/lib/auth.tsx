@@ -2,18 +2,21 @@ import type { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
-import { supabase } from './supabase';
+import { initialAuthError, supabase } from './supabase';
 
 type AuthState = {
   session: Session | null;
   loading: boolean;
+  /** Set when Google/Supabase sent the user back with a sign-in error. */
+  authError: string | null;
 };
 
-const AuthContext = createContext<AuthState>({ session: null, loading: true });
+const AuthContext = createContext<AuthState>({ session: null, loading: true, authError: null });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const authError = initialAuthError;
 
   useEffect(() => {
     if (!supabase) {
@@ -28,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  return <AuthContext.Provider value={{ session, loading }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ session, loading, authError }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);
