@@ -5,18 +5,32 @@ import {
   EDUCATION,
   HABITS,
   LOOKING_FOR,
-  ageFrom,
   formatHeight,
   formatWeight,
   labelOf,
   lookingForColor,
-  type Photo,
-  type Profile,
+  type Units,
 } from '@/lib/entry';
+import type { EntryView } from '@/lib/radar';
 import { colors, fonts } from '@/lib/theme';
 
-/** A person's Entry, laid out like a page in the Luvdex: photo, type badge, stats, description. */
-export function EntryCard({ profile, photos, entryNo }: { profile: Profile; photos: Photo[]; entryNo?: number }) {
+type CardPhoto = { id: string; url: string | null };
+
+/**
+ * A person's Entry, laid out like a page in the Luvdex: photo, type badge, stats, description.
+ * `units` is the VIEWER's preference (cm/kg or ft/lb).
+ */
+export function EntryCard({
+  profile,
+  photos,
+  units,
+  entryNo,
+}: {
+  profile: EntryView;
+  photos: CardPhoto[];
+  units: Units;
+  entryNo?: number;
+}) {
   const [index, setIndex] = useState(0);
   const shown = photos.filter((p) => p.url);
   const current = shown[Math.min(index, shown.length - 1)];
@@ -24,8 +38,8 @@ export function EntryCard({ profile, photos, entryNo }: { profile: Profile; phot
   const education = [labelOf(EDUCATION, profile.education_level), profile.school].filter(Boolean).join(', ');
 
   const stats: [string, string][] = [
-    ['HEIGHT', formatHeight(profile.height_cm, profile.units)],
-    ['WEIGHT', formatWeight(profile.weight_kg, profile.units)],
+    ['HEIGHT', formatHeight(profile.height_cm, units)],
+    ['WEIGHT', formatWeight(profile.weight_kg, units)],
   ];
   if (education) stats.push(['EDUCATION', education]);
   if (work) stats.push(['WORK', work]);
@@ -59,7 +73,7 @@ export function EntryCard({ profile, photos, entryNo }: { profile: Profile; phot
 
       <Text style={styles.entryNo}>No. {String(entryNo ?? 1).padStart(3, '0')}</Text>
       <Text style={styles.name}>
-        {profile.first_name}, {ageFrom(profile.birthdate)}
+        {profile.first_name}, {profile.age}
       </Text>
       <View style={[styles.badge, { backgroundColor: lookingForColor(profile.looking_for) }]}>
         <Text style={styles.badgeText}>{labelOf(LOOKING_FOR, profile.looking_for).toUpperCase()}</Text>

@@ -67,7 +67,7 @@ export default function Onboarding() {
   const [saving, setSaving] = useState<string | null>(null);
 
   if (!authLoading && !session) return <Redirect href="/welcome" />;
-  if (!loading && profile?.onboarding_done) return <Redirect href="/home" />;
+  if (!loading && profile?.onboarding_done) return <Redirect href="/radar" />;
   if (loading || !session) return <DeviceFrame><Text style={styles.loading}>Loading…</Text></DeviceFrame>;
 
   // Start from an unfinished Entry if there is one, otherwise from the Google first name.
@@ -115,7 +115,7 @@ export default function Onboarding() {
       }
       const done = await updateProfile(uid, { onboarding_done: true });
       setProfile(done);
-      router.replace('/home');
+      router.replace('/radar');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
       setSaving(null);

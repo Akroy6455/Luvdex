@@ -18,5 +18,5 @@ export default function Index() {
     );
   }
   if (!session) return <Redirect href="/welcome" />;
-  return <Redirect href={profile?.onboarding_done ? '/home' : '/onboarding'} />;
+  return <Redirect href={profile?.onboarding_done ? '/radar' : '/onboarding'} />;
 }

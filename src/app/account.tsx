@@ -46,7 +46,7 @@ export default function Account() {
 
   return (
     <DeviceFrame
-      footer={<ShellButton variant="ghost" label="← Back to my Entry" onPress={() => router.replace('/home')} />}
+      footer={<ShellButton variant="ghost" label="← Back to my Entry" onPress={() => router.replace('/me')} />}
     >
       <Text style={styles.kicker}>ACCOUNT & SETTINGS</Text>
       <Text style={styles.email}>Signed in as {session?.user.email}</Text>

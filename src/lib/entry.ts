@@ -31,6 +31,11 @@ export type Profile = {
   smoking: Habit | null;
   units: Units;
   onboarding_done: boolean;
+  /** Visibility band in metres (multiples of 50). */
+  visibility_min_m: number;
+  visibility_max_m: number;
+  /** Ghost mode. */
+  is_paused: boolean;
 };
 
 /** Fields a user can edit after onboarding (birthdate and gender are locked). */
@@ -124,6 +129,26 @@ export const formatWeight = (kg: number, units: Units) => (units === 'metric' ? 
 export const HEIGHT_RANGE = { min: 120, max: 230 };
 export const WEIGHT_RANGE = { min: 30, max: 250 };
 
+/** Your own profile in the same shape used to draw anyone's Entry card. */
+export function toEntryView(p: Profile) {
+  return {
+    first_name: p.first_name,
+    age: ageFrom(p.birthdate),
+    looking_for: p.looking_for,
+    height_cm: p.height_cm,
+    weight_kg: p.weight_kg,
+    education_level: p.education_level,
+    school: p.school,
+    job_title: p.job_title,
+    company: p.company,
+    bio: p.bio,
+    interests: p.interests,
+    languages: p.languages,
+    drinking: p.drinking,
+    smoking: p.smoking,
+  };
+}
+
 // ---------------------------------------------------------------- Supabase calls
 function client() {
   if (!supabase) throw new Error('Luvdex is not connected to its backend.');
@@ -136,7 +161,9 @@ export async function fetchMyProfile(userId: string): Promise<Profile | null> {
   return data as Profile | null;
 }
 
-export async function upsertProfile(profile: Omit<Profile, 'onboarding_done'> & { onboarding_done?: boolean }) {
+type NewProfile = Omit<Profile, 'onboarding_done' | 'visibility_min_m' | 'visibility_max_m' | 'is_paused'>;
+
+export async function upsertProfile(profile: NewProfile & { onboarding_done?: boolean }) {
   const { data, error } = await client().from('profiles').upsert(profile).select('*').single();
   if (error) throw friendlyError(error);
   return data as Profile;

@@ -110,7 +110,7 @@ export default function EditEntry() {
         ...optionalFieldsFromDraft(draft),
       });
       setProfile(saved);
-      router.replace('/home');
+      router.replace('/me');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not save. Please try again.');
       setSaving(false);
@@ -122,7 +122,7 @@ export default function EditEntry() {
       footer={
         <>
           <ShellButton label="Save changes" onPress={save} busy={saving} disabled={photoBusy} />
-          <ShellButton variant="ghost" label="Cancel" onPress={() => router.replace('/home')} />
+          <ShellButton variant="ghost" label="Cancel" onPress={() => router.replace('/me')} />
         </>
       }
     >
