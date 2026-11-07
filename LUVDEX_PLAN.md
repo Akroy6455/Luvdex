@@ -422,6 +422,7 @@ You do the account setup and dashboard clicks; I write and configure the code. S
 - [ ] Block hides both people instantly; report creates a review item
 - [ ] Privacy Policy, Terms, Community Guidelines and a contact email are live
 - [ ] Maps key restricted; budget alerts on; Supabase on the Pro plan (the free plan pauses inactive projects)
+- [ ] ⚠️ Throw range set back to **50 m**. It's **400 m for testing** since 7 Nov 2026. Fix with SQL: `update private.settings set value = '50' where key = 'throw_range_m';`
 - [ ] Sentry receiving errors; PostHog counting sign-ups
 
 **Phone apps (later)**

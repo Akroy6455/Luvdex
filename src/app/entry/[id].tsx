@@ -90,7 +90,7 @@ export default function EntryScreen() {
         <>
           {entry.distance_band ? (
             <Text style={[styles.band, entry.in_range && styles.bandInRange]}>
-              {entry.in_range ? '♥ Within Luvball range (50 m)' : BAND_LABEL[entry.distance_band]}
+              {entry.in_range ? '♥ Within Luvball range' : BAND_LABEL[entry.distance_band]}
             </Text>
           ) : null}
           <EntryCard profile={entry} photos={entry.photos} units={profile?.units ?? 'metric'} />

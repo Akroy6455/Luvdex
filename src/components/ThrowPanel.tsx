@@ -70,7 +70,7 @@ export function ThrowPanel({ entry, onResult }: Props) {
         : "Waiting to see if they throw one back. If they do, it's a match.";
   } else if (!inReach) {
     label = `Get closer: ${entry.distance_band ? BAND_LABEL[entry.distance_band] : 'not nearby right now'}`;
-    hint = 'Luvballs reach 50 m. Walk closer and the button lights up.';
+    hint = 'Walk closer and the button lights up.';
   } else if (!entry.gps_ok) {
     label = 'GPS too weak to aim';
     hint = 'Move somewhere with a clearer view of the sky, then come back to this Entry.';
