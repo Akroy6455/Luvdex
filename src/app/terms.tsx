@@ -52,6 +52,7 @@ const sections: LegalSection[] = [
       'Luvballs and gold coins are virtual items for use inside Luvdex only. They have no cash value and cannot be sold, transferred or exchanged for money.',
       'New accounts start with 3 Luvballs and 100 gold coins. You receive 1 free Luvball each month, up to a maximum of 12. 300 gold coins buy 1 Luvball.',
       'If a friend creates an account with your referral code, you each receive 100 gold coins. Referral bonuses for the person who invited are limited to 20 every 30 days.',
+      'If two or more people throw a Luvball at the same person within an hour, they play rock-paper-scissors for it. Rejecting a challenge, or not answering or picking a move within 5 minutes, loses the contest. A lost Luvball is not refunded.',
       'Creating fake or duplicate accounts to collect coins is not allowed. We may remove coins, Luvballs or accounts gained this way.',
       'We may change these amounts or how they work. We will tell you in the app before important changes.',
     ],

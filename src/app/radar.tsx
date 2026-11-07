@@ -27,6 +27,8 @@ export default function Radar() {
   if (!profileLoading && session && !profile?.onboarding_done) return <Redirect href="/onboarding" />;
 
   const open = (id: string) => router.push({ pathname: '/entry/[id]', params: { id } });
+  const contestNote = notes.items.find((n) => n.type === 'contest' && !n.read_at) ?? null;
+  const unreadContests = notes.items.filter((n) => n.type === 'contest' && !n.read_at).length;
   const inRange = radar.people.some((p) => p.in_range);
 
   /** Pause = Ghost mode: hidden from everyone, location removed from the server straight away. */
@@ -48,7 +50,7 @@ export default function Radar() {
       lensOn={inRange}
       footer={
         <View style={styles.navRow}>
-          <NavButton label="Luvballs" badge={notes.unreadLuvballs} onPress={() => router.push('/luvballs')} />
+          <NavButton label="Luvballs" badge={notes.unreadLuvballs + unreadContests} onPress={() => router.push('/luvballs')} />
           <NavButton label="Caught" badge={notes.unreadMessages} onPress={() => router.push('/caught')} />
           <NavButton label="My Entry" onPress={() => router.push('/me')} />
         </View>
@@ -67,6 +69,22 @@ export default function Radar() {
           </Pressable>
         </View>
       </View>
+
+      {contestNote ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            notes.dismiss([contestNote.id]);
+            if (contestNote.payload.contest_id)
+              router.push({ pathname: '/contest/[id]', params: { id: contestNote.payload.contest_id } });
+          }}
+          style={styles.contestBanner}
+        >
+          <Text style={styles.contestTitle}>{contestNote.payload.title ?? '⚔️ Luvball contest'}</Text>
+          {contestNote.payload.body ? <Text style={styles.contestBody}>{contestNote.payload.body}</Text> : null}
+          <Text style={styles.contestCta}>Open →</Text>
+        </Pressable>
+      ) : null}
 
       <PushPrompt variant="banner" />
 
@@ -245,6 +263,10 @@ function NavButton({ label, onPress, badge }: { label: string; onPress: () => vo
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   headerLinks: { flexDirection: 'row', gap: 14 },
+  contestBanner: { marginBottom: 10, padding: 12, borderRadius: 12, backgroundColor: colors.ink, gap: 4 },
+  contestTitle: { fontFamily: fonts.bodyHeavy, fontSize: 15, color: colors.white },
+  contestBody: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.cream },
+  contestCta: { fontFamily: fonts.bodyHeavy, fontSize: 13, color: colors.sparkYellow, marginTop: 2 },
   pausePill: {
     flexDirection: 'row',
     alignItems: 'center',

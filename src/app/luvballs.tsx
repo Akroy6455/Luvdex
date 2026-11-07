@@ -6,6 +6,7 @@ import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
 import { Luvball } from '@/components/Luvball';
 import { useAuth } from '@/lib/auth';
+import { getMyContests, needsMe, type Contest } from '@/lib/contests';
 import {
   buyLuvball,
   getLuvballStatus,
@@ -22,6 +23,7 @@ export default function Luvballs() {
   const { session, loading } = useAuth();
   const [items, setItems] = useState<AppNotification[] | null>(null);
   const [status, setStatus] = useState<LuvballStatus | null>(null);
+  const [contests, setContests] = useState<Contest[]>([]);
   const [buying, setBuying] = useState(false);
   const [buyMsg, setBuyMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -31,10 +33,11 @@ export default function Luvballs() {
       if (!session) return;
       (async () => {
         try {
-          const [all, st] = await Promise.all([getNotifications(), getLuvballStatus()]);
+          const [all, st, games] = await Promise.all([getNotifications(), getLuvballStatus(), getMyContests()]);
           const received = all.filter((n) => n.type === 'luvball_received');
           setItems(received);
           setStatus(st);
+          setContests(games);
           await markRead(received.filter((n) => !n.read_at).map((n) => n.id));
         } catch {
           setItems([]);
@@ -151,6 +154,44 @@ export default function Luvballs() {
           {status ? `${status.referrals} friend${status.referrals === 1 ? '' : 's'} joined with your code.` : ''}
         </Text>
       </View>
+
+      {/* Contests */}
+      {contests.length ? (
+        <>
+          <Text style={styles.section}>⚔️ Your contests</Text>
+          <View style={styles.list}>
+            {contests.map((c) => (
+              <Pressable
+                key={c.id}
+                accessibilityRole="button"
+                onPress={() => router.push({ pathname: '/contest/[id]', params: { id: c.id } })}
+                style={[styles.item, needsMe(c) && styles.itemNew]}
+              >
+                <Text style={styles.itemIcon}>{c.result === 'won' ? '🏆' : c.result === 'lost' ? '💔' : '⚔️'}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.itemTitle}>For {c.target_name}'s Luvball</Text>
+                  <Text style={styles.itemTime}>
+                    {c.result === 'won'
+                      ? 'You won'
+                      : c.result === 'lost'
+                        ? 'You lost'
+                        : c.result === 'cancelled'
+                          ? 'Cancelled'
+                          : c.must_accept
+                            ? 'Challenge waiting for your answer'
+                            : c.status === 'pending'
+                              ? 'Waiting for the other thrower'
+                              : c.my_move
+                                ? 'Waiting for your rival'
+                                : `Round ${c.round}: your move!`}
+                  </Text>
+                </View>
+                {needsMe(c) ? <Text style={styles.newTag}>PLAY</Text> : null}
+              </Pressable>
+            ))}
+          </View>
+        </>
+      ) : null}
 
       {/* Received */}
       <Text style={styles.section}>Thrown at you</Text>

@@ -17,6 +17,7 @@ export function ThrowPanel({ entry, onResult }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState<number | null>(null);
+  const [contested, setContested] = useState(false);
   const y = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
   const spin = useRef(new Animated.Value(0)).current;
@@ -51,7 +52,10 @@ export function ThrowPanel({ entry, onResult }: Props) {
     setError(null);
     try {
       const [result] = await Promise.all([throwLuvball(entry.id), animate()]);
-      if (result.result === 'thrown') setSent(result.remaining);
+      if (result.result === 'thrown') {
+        setSent(result.remaining);
+        setContested(!!result.contest);
+      }
       onResult(result);
     } catch (e) {
       reset();
@@ -101,6 +105,15 @@ export function ThrowPanel({ entry, onResult }: Props) {
       </Pressable>
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
+      {contested ? (
+        <Pressable accessibilityRole="button" onPress={() => router.push('/luvballs')} style={styles.contestBox}>
+          <Text style={styles.contestText}>
+            ⚔️ Someone else threw a Luvball at {entry.first_name} within the last hour. You'll play rock-paper-scissors for
+            it. Watch for the challenge, because each turn has a 5-minute limit.
+          </Text>
+          <Text style={styles.more}>See my contests →</Text>
+        </Pressable>
+      ) : null}
       {error && error.includes('out of Luvballs') ? (
         <Pressable accessibilityRole="button" onPress={() => router.push('/luvballs')}>
           <Text style={styles.more}>Get more Luvballs →</Text>
@@ -122,4 +135,6 @@ const styles = StyleSheet.create({
   hint: { fontFamily: fonts.bodySemi, fontSize: 13, lineHeight: 18, color: colors.cream, textAlign: 'center' },
   error: { fontFamily: fonts.bodyBold, fontSize: 14, lineHeight: 19, color: colors.white, textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: 8, borderRadius: 8 },
   more: { fontFamily: fonts.bodyHeavy, fontSize: 15, color: colors.sparkYellow, textDecorationLine: 'underline' },
+  contestBox: { alignSelf: 'stretch', backgroundColor: colors.ink, borderRadius: 12, padding: 12, gap: 6 },
+  contestText: { fontFamily: fonts.bodySemi, fontSize: 14, lineHeight: 20, color: colors.white },
 });

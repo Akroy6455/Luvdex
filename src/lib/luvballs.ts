@@ -3,7 +3,7 @@ import type { LookingFor } from './entry';
 import { supabase } from './supabase';
 
 export type ThrowResult =
-  | { result: 'thrown'; remaining: number }
+  | { result: 'thrown'; remaining: number; contest?: boolean }
   | { result: 'match'; match_id: string; user_id: string; name: string; remaining: number };
 
 /** Your Luvball stash and gold coins. */
@@ -16,12 +16,13 @@ export type LuvballStatus = {
   referrals: number;
   received_active: number;
   throw_range_m: number;
+  contests_waiting: number;
 };
 
 export type AppNotification = {
   id: string;
-  type: 'luvball_received' | 'match';
-  payload: { match_id?: string; user_id?: string; name?: string };
+  type: 'luvball_received' | 'match' | 'contest';
+  payload: { match_id?: string; user_id?: string; name?: string; contest_id?: string; title?: string; body?: string };
   deliver_at: string;
   read_at: string | null;
 };
