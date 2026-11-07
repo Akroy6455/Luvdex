@@ -14,7 +14,7 @@ export default function Welcome() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(authError);
 
-  if (session) return <Redirect href="/home" />;
+  if (session) return <Redirect href="/" />;
 
   const onGoogle = async () => {
     setError(null);

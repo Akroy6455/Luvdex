@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ComponentRef, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,13 +11,20 @@ type Props = {
   children: ReactNode;
   /** Controls shown on the red shell below the screen. */
   footer?: ReactNode;
+  /** When this value changes, the page scrolls back to the top (e.g. a new form step). */
+  scrollKey?: string | number;
 };
 
 /** The retro Luvdex gadget: red shell, heart lens, LCD screen. */
-export function DeviceFrame({ lensOn = false, children, footer }: Props) {
+export function DeviceFrame({ lensOn = false, children, footer, scrollKey }: Props) {
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [scrollKey]);
+
   return (
     <SafeAreaView style={styles.page}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.shell}>
           <View style={styles.topBar}>
             <View style={[styles.lens, lensOn && styles.lensOn]}>

@@ -2,18 +2,21 @@ import { Redirect } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
+import { useProfile } from '@/lib/profile';
 import { colors } from '@/lib/theme';
 
-/** Sends people to Welcome (signed out) or Home (signed in). */
+/** Signed out → Welcome. Signed in without a finished Entry → sign-up steps. Otherwise → Home. */
 export default function Index() {
   const { session, loading } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
 
-  if (loading) {
+  if (loading || (session && profileLoading)) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.deepShell }}>
         <ActivityIndicator color={colors.cream} />
       </View>
     );
   }
-  return <Redirect href={session ? '/home' : '/welcome'} />;
+  if (!session) return <Redirect href="/welcome" />;
+  return <Redirect href={profile?.onboarding_done ? '/home' : '/onboarding'} />;
 }

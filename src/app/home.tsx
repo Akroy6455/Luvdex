@@ -1,54 +1,61 @@
-import { Redirect } from 'expo-router';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Redirect, router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
-import { signOut, useAuth } from '@/lib/auth';
+import { EntryCard } from '@/components/EntryCard';
+import { useAuth } from '@/lib/auth';
+import { fetchMyPhotos, type Photo } from '@/lib/entry';
+import { useProfile } from '@/lib/profile';
 import { colors, fonts } from '@/lib/theme';
 
-/** Phase 0 placeholder: proves Google sign-in works end to end. */
+/** Phase 1 home: your own Entry. The Radar replaces this as the main screen in Phase 2. */
 export default function Home() {
   const { session, loading } = useAuth();
-  if (!loading && !session) return <Redirect href="/welcome" />;
+  const { profile, loading: profileLoading } = useProfile();
+  const [photos, setPhotos] = useState<Photo[] | null>(null);
 
-  const meta = session?.user.user_metadata ?? {};
-  const fullName: string = meta.full_name ?? meta.name ?? '';
-  const firstName = fullName.split(' ')[0] || 'there';
-  const avatar: string | undefined = meta.avatar_url ?? meta.picture;
+  const userId = session?.user.id;
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) return;
+      fetchMyPhotos(userId)
+        .then(setPhotos)
+        .catch(() => setPhotos([]));
+    }, [userId]),
+  );
+
+  if (!loading && !session) return <Redirect href="/welcome" />;
+  if (!profileLoading && session && !profile?.onboarding_done) return <Redirect href="/onboarding" />;
 
   return (
-    <DeviceFrame lensOn footer={<ShellButton variant="ghost" label="Sign out" onPress={signOut} />}>
-      <Text style={styles.entryNo}>SYSTEM · ONLINE</Text>
-      <View style={styles.center}>
-        {avatar ? (
-          <Image source={{ uri: avatar }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarFallback]}>
-            <Text style={styles.avatarLetter}>{firstName[0]?.toUpperCase()}</Text>
-          </View>
-        )}
-        <Text style={styles.title}>Hi, {firstName}!</Text>
-        <Text style={styles.body}>You're signed in. Your Luvdex is switched on.</Text>
-        <Text style={styles.email}>{session?.user.email}</Text>
-      </View>
+    <DeviceFrame
+      lensOn
+      footer={
+        <>
+          <ShellButton label="Edit my Entry" onPress={() => router.push('/entry-edit')} />
+          <ShellButton variant="ghost" label="Account & settings" onPress={() => router.push('/account')} />
+        </>
+      }
+    >
+      <Text style={styles.kicker}>MY ENTRY · HOW OTHERS SEE YOU</Text>
+      {profile && photos ? (
+        <EntryCard profile={profile} photos={photos} />
+      ) : (
+        <ActivityIndicator color={colors.luvRed} style={{ marginVertical: 40 }} />
+      )}
       <View style={styles.next}>
-        <Text style={styles.nextLabel}>NEXT UP</Text>
-        <Text style={styles.nextBody}>Creating your Entry: photos, looking for, height & more.</Text>
+        <Text style={styles.nextLabel}>COMING NEXT</Text>
+        <Text style={styles.nextBody}>The Radar: spot people within 500 m and throw Luvballs.</Text>
       </View>
     </DeviceFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  entryNo: { fontFamily: fonts.pixel, fontSize: 11, color: colors.inkSoft, letterSpacing: 1 },
-  center: { alignItems: 'center', marginTop: 20 },
-  avatar: { width: 96, height: 96, borderRadius: 48, borderWidth: 4, borderColor: colors.white },
-  avatarFallback: { backgroundColor: colors.lensPink, alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { fontFamily: fonts.bodyHeavy, fontSize: 40, color: colors.white },
-  title: { fontFamily: fonts.bodyHeavy, fontSize: 28, color: colors.ink, marginTop: 14 },
-  body: { fontFamily: fonts.body, fontSize: 16, color: colors.inkSoft, marginTop: 6, textAlign: 'center' },
-  email: { fontFamily: fonts.bodySemi, fontSize: 13, color: colors.inkSoft, marginTop: 4 },
-  next: { marginTop: 24, padding: 12, borderRadius: 10, backgroundColor: colors.cream, borderWidth: 2, borderColor: colors.screenEdge },
+  kicker: { fontFamily: fonts.pixel, fontSize: 11, color: colors.inkSoft, letterSpacing: 1, marginBottom: 10 },
+  next: { marginTop: 20, padding: 12, borderRadius: 10, backgroundColor: colors.cream, borderWidth: 2, borderColor: colors.screenEdge },
   nextLabel: { fontFamily: fonts.pixelBold, fontSize: 11, color: colors.luvRed, marginBottom: 4 },
   nextBody: { fontFamily: fonts.bodySemi, fontSize: 14, color: colors.ink },
 });
