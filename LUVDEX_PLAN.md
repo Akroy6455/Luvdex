@@ -455,7 +455,7 @@ You do the account setup and dashboard clicks; I write and configure the code. S
 
 | Phase | What gets built | Done when… |
 |---|---|---|
-| **0. Setup** | Accounts (§11), empty app online at your domain, Google sign-in | You can sign in at your domain on your phone |
+| **0. Setup** ✅ *done 7 Nov 2026* | Accounts (§11), empty app online at luvdex.vercel.app, Google sign-in | You can sign in on your phone |
 | **1. Entries** | Sign-up steps, photo upload (1–4), edit profile, units, delete account | You and a friend both have complete Entries |
 | **2. Radar** | Location sharing, map, nearest 5, distance bands, Scanner settings, visibility band, Ghost mode | Two phones 200 m apart see each other, and changing filters or bands hides them correctly |
 | **3. Luvballs** | Throw (50 m + grace window), anonymous delayed alerts, matching, Caught list, block, report | Two phones within 50 m throw at each other and both get "It's a match" |

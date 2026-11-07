@@ -4,6 +4,9 @@
 
 **Time:** about 45 minutes. **Cost:** $0. You don't need a credit card yet; Google Maps billing waits until Phase 2.
 
+> **🎉 PHASE 0 COMPLETE (7 Nov 2026):** Google sign-in works on https://luvdex.vercel.app from a phone, and Supabase shows 2 Google accounts.
+> *Lesson learned:* the Supabase "Client Secret" box must contain Google's `GOCSPX-…` value. A wrong value there causes "invalid_client" in the Supabase auth logs.
+>
 > **Status (7 Nov 2026)**
 > - ✅ **Part C (Supabase) is done by Claude.** The project `luvdex` is in Mumbai (ap-south-1), ID `ydbbqtvobahlnmgavdbo`, with PostGIS on and the keys saved in `.env.local`.
 >   - Your **Callback URL** (needed in Part D): `https://ydbbqtvobahlnmgavdbo.supabase.co/auth/v1/callback`

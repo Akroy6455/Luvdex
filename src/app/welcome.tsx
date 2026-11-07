@@ -1,4 +1,4 @@
-import { Redirect } from 'expo-router';
+import { Link, Redirect } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -40,7 +40,15 @@ export default function Welcome() {
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Text style={styles.legal}>
-            Luvdex is for adults 18+. By continuing you agree to our Terms and Privacy Policy.
+            Luvdex is for adults 18+. By continuing you agree to our{' '}
+            <Link href="/terms" style={styles.legalLink}>
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" style={styles.legalLink}>
+              Privacy Policy
+            </Link>
+            .
           </Text>
         </>
       }
@@ -83,4 +91,5 @@ const styles = StyleSheet.create({
   setupBody: { fontFamily: fonts.bodySemi, fontSize: 13, lineHeight: 18, color: colors.ink },
   error: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.white, textAlign: 'center' },
   legal: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.cream, textAlign: 'center', opacity: 0.9 },
+  legalLink: { fontFamily: fonts.bodyBold, textDecorationLine: 'underline', color: colors.cream },
 });
