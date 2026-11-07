@@ -423,6 +423,7 @@ You do the account setup and dashboard clicks; I write and configure the code. S
 - [ ] Privacy Policy, Terms, Community Guidelines and a contact email are live
 - [ ] Maps key restricted; budget alerts on; Supabase on the Pro plan (the free plan pauses inactive projects)
 - [ ] ⚠️ Throw range set back to **50 m**. It's **400 m for testing** since 7 Nov 2026. Fix with SQL: `update private.settings set value = '50' where key = 'throw_range_m';`
+- [ ] ⚠️ Thrower GPS limit set back to **75 m**. It's **150 m for testing** since 7 Nov 2026. Fix with SQL: `update private.settings set value = '75' where key = 'throw_gps_max_m';`
 - [ ] Sentry receiving errors; PostHog counting sign-ups
 
 **Phone apps (later)**
