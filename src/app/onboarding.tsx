@@ -20,7 +20,7 @@ import {
   validateLookingFor,
   type EntryDraft,
 } from '@/components/EntryFields';
-import { ErrorText, formStyles } from '@/components/Form';
+import { ErrorText, FieldLabel, TextField, formStyles } from '@/components/Form';
 import { PhotoGrid, pickPhotos } from '@/components/PhotoGrid';
 import { useAuth } from '@/lib/auth';
 import {
@@ -33,6 +33,7 @@ import {
   upsertProfile,
   type LocalPhoto,
 } from '@/lib/entry';
+import { checkReferralCode, claimReferral } from '@/lib/luvballs';
 import { useProfile } from '@/lib/profile';
 import { colors, fonts } from '@/lib/theme';
 
@@ -65,6 +66,7 @@ export default function Onboarding() {
   const [photos, setPhotos] = useState<(LocalPhoto & { key: string })[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const [referral, setReferral] = useState('');
 
   if (!authLoading && !session) return <Redirect href="/welcome" />;
   if (!loading && profile?.onboarding_done) return <Redirect href="/radar" />;
@@ -114,6 +116,11 @@ export default function Onboarding() {
         await uploadPhoto(uid, photos[i], i);
       }
       const done = await updateProfile(uid, { onboarding_done: true });
+      // Referral bonus (+100 gold coins each). The code was checked before saving.
+      if (referral.trim()) {
+        setSaving('Adding your referral bonus…');
+        await claimReferral(referral).catch(() => undefined);
+      }
       setProfile(done);
       router.replace('/radar');
     } catch (e) {
@@ -122,12 +129,29 @@ export default function Onboarding() {
     }
   };
 
-  const next = () => {
+  const next = async () => {
     const problem = s.validate?.(current, photos) ?? null;
     setError(problem);
     if (problem) return;
-    if (isLast) finish();
-    else setStep(step + 1);
+    if (!isLast) {
+      setStep(step + 1);
+      return;
+    }
+    const code = referral.trim();
+    if (code) {
+      if (code.toLowerCase() === (session.user.email ?? '').toLowerCase()) {
+        setError("That's your own email. Enter the email of the friend who invited you, or leave it empty.");
+        return;
+      }
+      setSaving('Checking referral code…');
+      const ok = await checkReferralCode(code).catch(() => false);
+      setSaving(null);
+      if (!ok) {
+        setError("We couldn't find a Luvdex member with that email. Check it, or leave it empty.");
+        return;
+      }
+    }
+    finish();
   };
 
   const back = () => {
@@ -178,7 +202,24 @@ export default function Onboarding() {
       )}
       {step === 3 && <BodyFields draft={current} update={update} />}
       {step === 4 && <WorkFields draft={current} update={update} />}
-      {step === 5 && <AboutFields draft={current} update={update} />}
+      {step === 5 && (
+        <>
+          <AboutFields draft={current} update={update} />
+          <View style={[formStyles.group, styles.referral]}>
+            <FieldLabel hint="Optional">Invited by a friend?</FieldLabel>
+            <TextField
+              value={referral}
+              onChangeText={setReferral}
+              placeholder="Their email address (referral code)"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              inputMode="email"
+            />
+            <Text style={styles.note}>You both get 🪙 100 gold coins when your Entry is created.</Text>
+          </View>
+        </>
+      )}
 
       <ErrorText>{error}</ErrorText>
     </DeviceFrame>
@@ -192,4 +233,5 @@ const styles = StyleSheet.create({
   progressTrack: { height: 8, borderRadius: 4, backgroundColor: colors.white, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: colors.luvRed, borderRadius: 4 },
   note: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.inkSoft, marginTop: 10 },
+  referral: { marginTop: 22, padding: 12, borderRadius: 12, backgroundColor: '#FFFBEA', borderWidth: 2, borderColor: colors.sparkYellow },
 });

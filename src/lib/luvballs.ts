@@ -4,7 +4,19 @@ import { supabase } from './supabase';
 
 export type ThrowResult =
   | { result: 'thrown'; remaining: number }
-  | { result: 'match'; match_id: string; user_id: string; name: string };
+  | { result: 'match'; match_id: string; user_id: string; name: string; remaining: number };
+
+/** Your Luvball stash and gold coins. */
+export type LuvballStatus = {
+  remaining: number; // Luvballs you hold now
+  max: number; // 12
+  coins: number;
+  price: number; // coins per Luvball (300)
+  next_free_at: string | null; // when the next monthly Luvball arrives (null when full)
+  referrals: number;
+  received_active: number;
+  throw_range_m: number;
+};
 
 export type AppNotification = {
   id: string;
@@ -57,10 +69,30 @@ export async function throwLuvball(target: string): Promise<ThrowResult> {
   return data as ThrowResult;
 }
 
-export async function getLuvballStatus(): Promise<{ remaining: number; received_active: number }> {
+export async function getLuvballStatus(): Promise<LuvballStatus> {
   const { data, error } = await client().rpc('get_luvball_status');
   if (error) throw friendly(error);
-  return data as { remaining: number; received_active: number };
+  return data as LuvballStatus;
+}
+
+/** Spend 300 gold coins on 1 Luvball. Returns the new status. */
+export async function buyLuvball(): Promise<LuvballStatus> {
+  const { data, error } = await client().rpc('buy_luvball');
+  if (error) throw friendly(error);
+  return data as LuvballStatus;
+}
+
+/** True if the code (a member's email) can be used as a referral. */
+export async function checkReferralCode(code: string): Promise<boolean> {
+  const { data, error } = await client().rpc('check_referral_code', { code: code.trim() });
+  if (error) throw friendly(error);
+  return data === true;
+}
+
+/** Gives both people +100 gold coins. Only works right after creating an account. */
+export async function claimReferral(code: string) {
+  const { error } = await client().rpc('claim_referral', { code: code.trim() });
+  if (error) throw friendly(error);
 }
 
 /** Delivered notifications from the last 30 days (undelivered ones are hidden by the database). */

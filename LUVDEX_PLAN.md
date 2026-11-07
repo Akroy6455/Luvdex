@@ -65,7 +65,9 @@ Supporting rules (my recommended defaults):
 | Grace window | You can still throw up to **10 min after** someone leaves your 50 m range ("Recently in range" strip) | People walk away fast; without this, matching would be nearly impossible |
 | Notification delay | Random **1–5 minutes** | If the alert arrived instantly, you'd just look around and see who threw it |
 | Luvball lifetime | **7 days** | If you meet again within a week and they throw back, it's still a match |
-| Daily Luvballs | **10 per day** | Stops spam. Can become a paid feature later ("Luvball packs") |
+| Luvball stash | **Start with 3, +1 free per month, max 12** *(changed 7 Nov 2026)* | Makes each throw meaningful |
+| Gold coins | **Start with 100; 300 coins = 1 Luvball** | First step towards paid "coin packs" |
+| Referrals | **Friend enters your email at sign-up: +100 coins each** (inviter capped at 20 per 30 days) | Growth, with anti-farming limits |
 | Same person | One active Luvball per person | No pestering |
 
 ### 1.6 Blocking and reporting
@@ -85,7 +87,7 @@ Your brief didn't mention chat, but a match is useless without a way to talk. So
 | 3 | Grace window after leaving 50 m range | 10 minutes |
 | 4 | Anonymous notification delay | Random 1–5 minutes |
 | 5 | How long a Luvball stays active | 7 days |
-| 6 | Luvballs per day | 10 |
+| 6 | Luvballs | Start 3, +1/month, max 12; 100 starting coins; 300 coins = 1 Luvball; referral +100 each *(owner decision 7 Nov 2026)* |
 | 7 | How long you stay visible after closing the app | 15 minutes |
 | 8 | Chat in the first version | Yes, text only |
 | 9 | Desktop computers | Profile, matches and chat work. The Radar asks you to open Luvdex on your phone (laptop locations are too inaccurate and the game is about walking) |

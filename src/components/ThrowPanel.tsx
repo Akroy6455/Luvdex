@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -66,7 +67,7 @@ export function ThrowPanel({ entry, onResult }: Props) {
     label = '✓ Luvball thrown';
     hint =
       sent !== null
-        ? `Sent! They'll get an anonymous alert in a few minutes. ${sent} Luvball${sent === 1 ? '' : 's'} left today.`
+        ? `Sent! They'll get an anonymous alert in a few minutes. ${sent} Luvball${sent === 1 ? '' : 's'} left in your stash.`
         : "Waiting to see if they throw one back. If they do, it's a match.";
   } else if (!inReach) {
     label = `Get closer: ${entry.distance_band ? BAND_LABEL[entry.distance_band] : 'not nearby right now'}`;
@@ -100,6 +101,11 @@ export function ThrowPanel({ entry, onResult }: Props) {
       </Pressable>
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error && error.includes('out of Luvballs') ? (
+        <Pressable accessibilityRole="button" onPress={() => router.push('/luvballs')}>
+          <Text style={styles.more}>Get more Luvballs →</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -115,4 +121,5 @@ const styles = StyleSheet.create({
   buttonTextOff: { color: colors.white },
   hint: { fontFamily: fonts.bodySemi, fontSize: 13, lineHeight: 18, color: colors.cream, textAlign: 'center' },
   error: { fontFamily: fonts.bodyBold, fontSize: 14, lineHeight: 19, color: colors.white, textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.2)', padding: 8, borderRadius: 8 },
+  more: { fontFamily: fonts.bodyHeavy, fontSize: 15, color: colors.sparkYellow, textDecorationLine: 'underline' },
 });

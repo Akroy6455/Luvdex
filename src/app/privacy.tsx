@@ -16,6 +16,7 @@ const sections: LegalSection[] = [
       'Your settings: filters (age, height, weight, relationship type), your visibility distance range and Ghost mode.',
       'Location: your precise location, only while you use the Radar. We keep only your latest position, never a history.',
       'Activity: Luvballs you throw, matches, chat messages, blocks and reports.',
+      'Your Luvball and gold-coin balance, and referrals. Your referral code is your email address: anyone you share it with will see that email, and we use it only to credit referral coins.',
       'Technical information: device type, notification tokens, error reports and basic usage statistics that help us fix problems and improve the service.',
     ],
   },
