@@ -23,7 +23,7 @@
     },
     "web": {
       "output": "single",
-      "favicon": "./assets/favicon.png",
+      "favicon": "./public/favicon-64.png",
       "name": "Luvdex",
       "shortName": "Luvdex",
       "themeColor": "#E23A4E",

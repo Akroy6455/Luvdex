@@ -5,6 +5,7 @@ import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'rea
 import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
 import { MatchCelebration } from '@/components/MatchCelebration';
+import { PushPrompt } from '@/components/PushPrompt';
 import { RadarMap } from '@/components/RadarMap';
 import { useAuth } from '@/lib/auth';
 import { LOOKING_FOR, labelOf, lookingForColor, updateProfile } from '@/lib/entry';
@@ -66,6 +67,8 @@ export default function Radar() {
           </Pressable>
         </View>
       </View>
+
+      <PushPrompt variant="banner" />
 
       {!ghost ? (
         <Pressable

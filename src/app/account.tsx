@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
+import { PushPrompt } from '@/components/PushPrompt';
 import { ErrorText, FieldLabel, Segmented, TextField } from '@/components/Form';
 import { signOut, useAuth } from '@/lib/auth';
 import { deleteMyAccount, updateProfile, type Units } from '@/lib/entry';
@@ -76,6 +77,11 @@ export default function Account() {
           <ErrorText>{unitsError}</ErrorText>
         </View>
       ) : null}
+
+      <View style={styles.block}>
+        <FieldLabel>Notifications</FieldLabel>
+        <PushPrompt variant="full" />
+      </View>
 
       <View style={styles.block}>
         <FieldLabel hint={blocked.length ? `${blocked.length}` : undefined}>Blocked people</FieldLabel>
