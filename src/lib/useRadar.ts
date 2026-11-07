@@ -1,7 +1,12 @@
 // Watches the phone's location while the Radar is open, sends it to the server
 // (at most every ~30 s, or after moving ~25 m), and refreshes who is nearby.
+//
+// Website: uses the browser's geolocation directly. (expo-location's web version
+// ignores browser errors, which left iPhones stuck on "Finding your location…".)
+// Phone apps: uses expo-location.
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Platform } from 'react-native';
 
 import { registerDevice } from './device';
 import { getNearby, offsetMeters, sendLocation, type NearbyPerson } from './radar';
@@ -9,8 +14,10 @@ import { getNearby, offsetMeters, sendLocation, type NearbyPerson } from './rada
 export type RadarStatus =
   | 'checking' // looking at permission state
   | 'needs_permission' // show our explanation before the browser/phone asks
-  | 'denied' // the user said no
-  | 'locating' // waiting for the first GPS fix
+  | 'denied' // location blocked for Luvdex (browser or phone settings)
+  | 'unavailable' // the phone's Location Services are off / no position source
+  | 'locating' // waiting for the first fix
+  | 'slow' // still no fix after a while (indoors, weak signal)
   | 'low_accuracy' // location too vague (typical on laptops / indoors)
   | 'ghost' // Ghost mode is on
   | 'active'
@@ -18,10 +25,24 @@ export type RadarStatus =
 
 export type MyPosition = { lat: number; lng: number; accuracy: number };
 
+type Fix = { coords: { latitude: number; longitude: number; accuracy: number | null } };
+
 const SEND_EVERY_MS = 30_000;
 const SEND_AFTER_MOVING_M = 25;
 const REFRESH_EVERY_MS = 20_000;
 const MAX_ACCURACY_M = 150;
+const SLOW_AFTER_MS = 15_000;
+
+const isWeb = Platform.OS === 'web';
+
+async function webPermissionState(): Promise<'granted' | 'denied' | 'prompt'> {
+  try {
+    const res = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+    return res.state as 'granted' | 'denied' | 'prompt';
+  } catch {
+    return 'prompt'; // browsers without the Permissions API: just ask
+  }
+}
 
 export function useRadar({ enabled }: { enabled: boolean }) {
   const [status, setStatus] = useState<RadarStatus>('checking');
@@ -31,7 +52,9 @@ export function useRadar({ enabled }: { enabled: boolean }) {
   const [permissionAsked, setPermissionAsked] = useState(false);
 
   const lastSent = useRef<{ at: number; lat: number; lng: number } | null>(null);
-  const watcher = useRef<Location.LocationSubscription | null>(null);
+  const stopWatch = useRef<(() => void) | null>(null);
+  const slowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const gotFix = useRef(false);
 
   const refreshNearby = useCallback(async () => {
     try {
@@ -43,7 +66,8 @@ export function useRadar({ enabled }: { enabled: boolean }) {
   }, []);
 
   const handlePosition = useCallback(
-    async (pos: Location.LocationObject) => {
+    async (pos: Fix) => {
+      gotFix.current = true;
       const accuracy = pos.coords.accuracy ?? 9999;
       const next = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy };
       setMe(next);
@@ -70,23 +94,65 @@ export function useRadar({ enabled }: { enabled: boolean }) {
     [refreshNearby],
   );
 
+  const stop = useCallback(() => {
+    stopWatch.current?.();
+    stopWatch.current = null;
+    if (slowTimer.current) clearTimeout(slowTimer.current);
+    slowTimer.current = null;
+  }, []);
+
+  /** Starts watching. On the website this also triggers the browser's permission prompt. */
   const startWatching = useCallback(async () => {
-    watcher.current?.remove();
+    stop();
+    gotFix.current = false;
     setStatus('locating');
+    slowTimer.current = setTimeout(() => {
+      if (!gotFix.current) setStatus((s) => (s === 'locating' ? 'slow' : s));
+    }, SLOW_AFTER_MS);
+
+    if (isWeb) {
+      if (!('geolocation' in navigator)) {
+        setStatus('unavailable');
+        return;
+      }
+      const id = navigator.geolocation.watchPosition(
+        (p) => handlePosition(p),
+        (err) => {
+          if (err.code === err.PERMISSION_DENIED) {
+            stop();
+            setStatus('denied');
+          } else if (err.code === err.POSITION_UNAVAILABLE) {
+            setStatus((s) => (gotFix.current ? s : 'unavailable'));
+          } else {
+            // TIMEOUT: the watch keeps trying; tell the user if we have nothing yet.
+            setStatus((s) => (gotFix.current ? s : 'slow'));
+          }
+        },
+        { enableHighAccuracy: true, maximumAge: 10_000, timeout: 30_000 },
+      );
+      stopWatch.current = () => navigator.geolocation.clearWatch(id);
+      return;
+    }
+
     try {
-      watcher.current = await Location.watchPositionAsync(
+      const sub = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.High, timeInterval: 10_000, distanceInterval: 10 },
-        handlePosition,
+        (p) => handlePosition(p),
         () => setStatus('error'),
       );
+      stopWatch.current = () => sub.remove();
     } catch {
       setStatus('error');
     }
-  }, [handlePosition]);
+  }, [handlePosition, stop]);
 
-  /** Called from our "Turn on location" button, so the system prompt appears in context. */
+  /** Called from our "Turn on location" / "Try again" buttons (a tap, so iPhones show the prompt). */
   const requestPermission = useCallback(async () => {
     setPermissionAsked(true);
+    if (isWeb) {
+      startWatching(); // the browser asks for permission here; a refusal arrives as PERMISSION_DENIED
+      return;
+    }
     try {
       const res = await Location.requestForegroundPermissionsAsync();
       if (res.granted) startWatching();
@@ -99,8 +165,7 @@ export function useRadar({ enabled }: { enabled: boolean }) {
   // Start (or stop) when the Radar opens, closes, or Ghost mode changes.
   useEffect(() => {
     if (!enabled) {
-      watcher.current?.remove();
-      watcher.current = null;
+      stop();
       setPeople([]);
       setStatus('ghost');
       return;
@@ -108,6 +173,14 @@ export function useRadar({ enabled }: { enabled: boolean }) {
     let cancelled = false;
     (async () => {
       setStatus('checking');
+      if (isWeb) {
+        const state = await webPermissionState();
+        if (cancelled) return;
+        if (state === 'granted') startWatching();
+        else if (state === 'denied') setStatus('denied');
+        else setStatus('needs_permission');
+        return;
+      }
       try {
         const perm = await Location.getForegroundPermissionsAsync();
         if (cancelled) return;
@@ -120,10 +193,9 @@ export function useRadar({ enabled }: { enabled: boolean }) {
     })();
     return () => {
       cancelled = true;
-      watcher.current?.remove();
-      watcher.current = null;
+      stop();
     };
-  }, [enabled, startWatching]);
+  }, [enabled, startWatching, stop]);
 
   // Refresh the list regularly even when standing still (others move too).
   useEffect(() => {
@@ -132,5 +204,14 @@ export function useRadar({ enabled }: { enabled: boolean }) {
     return () => clearInterval(t);
   }, [status, refreshNearby]);
 
-  return { status, me, people, lastUpdated, requestPermission, permissionAsked, refresh: refreshNearby };
+  return {
+    status,
+    me,
+    people,
+    lastUpdated,
+    requestPermission,
+    permissionAsked,
+    retry: requestPermission,
+    refresh: refreshNearby,
+  };
 }
