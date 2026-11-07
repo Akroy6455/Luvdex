@@ -18,6 +18,7 @@ const sections: LegalSection[] = [
       'Activity: Luvballs you throw, matches, chat messages, blocks and reports.',
       'Your Luvball and gold-coin balance, and referrals. Your referral code is your email address: anyone you share it with will see that email, and we use it only to credit referral coins.',
       'Technical information: device type, notification tokens, error reports and basic usage statistics that help us fix problems and improve the service.',
+      'Device and network signals: a random device code stored in your browser or app, and a scrambled (one-way hashed) version of your IP address. We use them to limit each device to 2 accounts and to detect fake or duplicate accounts. We never store your IP address in readable form, and we delete these records after 90 days without use.',
     ],
   },
   {

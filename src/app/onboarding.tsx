@@ -147,7 +147,9 @@ export default function Onboarding() {
       const ok = await checkReferralCode(code).catch(() => false);
       setSaving(null);
       if (!ok) {
-        setError("We couldn't find a Luvdex member with that email. Check it, or leave it empty.");
+        setError(
+          "That referral code can't be used. Check the email, or leave it empty. (Codes don't work between two accounts on the same phone.)",
+        );
         return;
       }
     }

@@ -3,6 +3,7 @@
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { registerDevice } from './device';
 import { getNearby, offsetMeters, sendLocation, type NearbyPerson } from './radar';
 
 export type RadarStatus =
@@ -59,6 +60,8 @@ export function useRadar({ enabled }: { enabled: boolean }) {
         const result = await sendLocation(next.lat, next.lng, accuracy);
         if (result === 'ok') lastSent.current = { at: Date.now(), lat: next.lat, lng: next.lng };
         if (result === 'low_accuracy') setStatus('low_accuracy');
+        // Device registration expired or missing: register again; the next update will go through.
+        if (result === 'no_device') await registerDevice().catch(() => undefined);
       } catch {
         return;
       }

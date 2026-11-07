@@ -75,7 +75,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   looking_for_filter: ['life_partner', 'long_term', 'long_term_open_short', 'short_term', 'prefer_not_to_say'],
 };
 
-export type LocationResult = 'ok' | 'throttled' | 'low_accuracy' | 'jump' | 'no_entry';
+export type LocationResult = 'ok' | 'throttled' | 'low_accuracy' | 'jump' | 'no_entry' | 'no_device';
 
 function client() {
   if (!supabase) throw new Error('Luvdex is not connected to its backend.');

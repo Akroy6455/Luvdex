@@ -75,6 +75,29 @@ select
   (select count(*) from public.push_subscriptions) as devices_with_notifications;
 ```
 
+## 4b. Possible fake accounts
+Each device can hold at most 2 accounts. These queries flag patterns worth a look. Nobody is blocked by them automatically.
+
+**Many new accounts from the same network in 24 hours** (IP addresses are stored only as scrambled codes):
+```sql
+select left(last_ip_hash, 10) as network, count(distinct user_id) as new_accounts
+from private.device_accounts
+where first_seen > now() - interval '24 hours' and last_ip_hash is not null
+group by last_ip_hash having count(distinct user_id) >= 5
+order by new_accounts desc;
+```
+A busy campus or office Wi-Fi can legitimately show high numbers, so treat this as a hint, not proof.
+
+**Devices with 2 accounts** (who shares a phone):
+```sql
+select left(d.device_id, 8) as device, string_agg(p.first_name || ' (' || u.email || ')', ', ') as accounts
+from private.device_accounts d
+join auth.users u on u.id = d.user_id
+left join public.profiles p on p.id = d.user_id
+where d.last_seen > now() - interval '30 days'
+group by d.device_id having count(*) >= 2;
+```
+
 ## 5. Testing settings (restore before launch!)
 ```sql
 select key, value from private.settings;

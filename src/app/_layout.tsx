@@ -6,7 +6,9 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { DeviceGate } from '@/components/DeviceGate';
 import { AuthProvider } from '@/lib/auth';
+import { DeviceProvider } from '@/lib/device';
 import { ProfileProvider } from '@/lib/profile';
 import { installWebAppTags, registerServiceWorker } from '@/lib/push';
 import { colors } from '@/lib/theme';
@@ -32,10 +34,14 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <ProfileProvider>
-          <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.deepShell } }} />
-        </ProfileProvider>
+        <DeviceProvider>
+          <ProfileProvider>
+            <StatusBar style="light" />
+            <DeviceGate>
+              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.deepShell } }} />
+            </DeviceGate>
+          </ProfileProvider>
+        </DeviceProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
