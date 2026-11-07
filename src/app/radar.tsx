@@ -48,7 +48,7 @@ export default function Radar() {
       footer={
         <View style={styles.navRow}>
           <NavButton label="Luvballs" badge={notes.unreadLuvballs} onPress={() => router.push('/luvballs')} />
-          <NavButton label="Caught" onPress={() => router.push('/caught')} />
+          <NavButton label="Caught" badge={notes.unreadMessages} onPress={() => router.push('/caught')} />
           <NavButton label="My Entry" onPress={() => router.push('/me')} />
         </View>
       }

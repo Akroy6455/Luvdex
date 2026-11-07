@@ -1,16 +1,20 @@
 // Polls in-app notifications while a screen is open. (Phone push arrives in Phase 4.)
 import { useCallback, useEffect, useState } from 'react';
 
+import { getUnreadMessageCount } from './chat';
 import { getNotifications, markRead, type AppNotification } from './luvballs';
 
 const POLL_MS = 20_000;
 
 export function useNotifications(enabled: boolean) {
   const [items, setItems] = useState<AppNotification[]>([]);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   const refresh = useCallback(async () => {
     try {
-      setItems(await getNotifications());
+      const [notes, unread] = await Promise.all([getNotifications(), getUnreadMessageCount()]);
+      setItems(notes);
+      setUnreadMessages(unread);
     } catch {
       // try again next poll
     }
@@ -31,5 +35,5 @@ export function useNotifications(enabled: boolean) {
     await markRead(ids);
   }, []);
 
-  return { items, unreadLuvballs, pendingMatch, dismiss, refresh };
+  return { items, unreadLuvballs, unreadMessages, pendingMatch, dismiss, refresh };
 }

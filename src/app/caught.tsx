@@ -5,21 +5,26 @@ import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'rea
 import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
 import { useAuth } from '@/lib/auth';
+import { getConversations, type Conversation } from '@/lib/chat';
 import { LOOKING_FOR, labelOf, lookingForColor } from '@/lib/entry';
-import { getMatches, timeAgo, type Match } from '@/lib/luvballs';
+import { timeAgo } from '@/lib/luvballs';
 import { colors, fonts } from '@/lib/theme';
 
-/** Your matches: people you caught each other with. */
+/** Your matches, as conversations. */
 export default function Caught() {
   const { session, loading } = useAuth();
-  const [matches, setMatches] = useState<Match[] | null>(null);
+  const [items, setItems] = useState<Conversation[] | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       if (!session) return;
-      getMatches()
-        .then(setMatches)
-        .catch(() => setMatches([]));
+      const load = () =>
+        getConversations()
+          .then(setItems)
+          .catch(() => setItems((prev) => prev ?? []));
+      load();
+      const t = setInterval(load, 20_000);
+      return () => clearInterval(t);
     }, [session]),
   );
 
@@ -27,42 +32,54 @@ export default function Caught() {
 
   return (
     <DeviceFrame footer={<ShellButton variant="ghost" label="← Back to Radar" onPress={() => router.replace('/radar')} />}>
-      <Text style={styles.kicker}>CAUGHT · {matches?.length ?? 0}</Text>
-      {matches === null ? (
+      <Text style={styles.kicker}>CAUGHT · {items?.length ?? 0}</Text>
+      {items === null ? (
         <ActivityIndicator color={colors.luvRed} style={{ marginVertical: 30 }} />
-      ) : matches.length === 0 ? (
+      ) : items.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>No matches yet</Text>
           <Text style={styles.body}>
-            When you and someone nearby both throw a Luvball at each other, you catch each other and they appear here.
+            When you and someone nearby both throw a Luvball at each other, you catch each other and can chat here.
           </Text>
         </View>
       ) : (
-        <View style={styles.grid}>
-          {matches.map((m, i) => (
+        <View style={styles.list}>
+          {items.map((c, i) => (
             <Pressable
-              key={m.match_id}
+              key={c.match_id}
               accessibilityRole="button"
-              onPress={() => router.push({ pathname: '/entry/[id]', params: { id: m.user_id } })}
-              style={styles.tile}
+              accessibilityLabel={`Chat with ${c.first_name}`}
+              onPress={() => router.push({ pathname: '/chat/[matchId]', params: { matchId: c.match_id } })}
+              style={[styles.row, c.unread > 0 && styles.rowUnread]}
             >
-              {m.photo_url ? (
-                <Image source={{ uri: m.photo_url }} style={styles.photo} />
+              {c.photo_url ? (
+                <Image source={{ uri: c.photo_url }} style={styles.photo} />
               ) : (
                 <View style={[styles.photo, styles.photoEmpty]}>
-                  <Text style={{ fontSize: 36, color: colors.white }}>♥</Text>
+                  <Text style={{ fontSize: 22, color: colors.white }}>♥</Text>
                 </View>
               )}
-              <Text style={styles.no}>No. {String(i + 1).padStart(3, '0')}</Text>
-              <Text style={styles.name}>
-                {m.first_name}, {m.age}
-              </Text>
-              <View style={[styles.badge, { backgroundColor: lookingForColor(m.looking_for) }]}>
-                <Text style={styles.badgeText} numberOfLines={1}>
-                  {labelOf(LOOKING_FOR, m.looking_for).toUpperCase()}
+              <View style={{ flex: 1 }}>
+                <View style={styles.topLine}>
+                  <Text style={styles.name} numberOfLines={1}>
+                    {c.first_name}, {c.age}
+                  </Text>
+                  <Text style={styles.when}>{timeAgo(c.last_at ?? c.matched_at)}</Text>
+                </View>
+                <View style={[styles.badge, { backgroundColor: lookingForColor(c.looking_for) }]}>
+                  <Text style={styles.badgeText} numberOfLines={1}>
+                    No. {String(i + 1).padStart(3, '0')} · {labelOf(LOOKING_FOR, c.looking_for).toUpperCase()}
+                  </Text>
+                </View>
+                <Text style={[styles.preview, c.unread > 0 && styles.previewUnread]} numberOfLines={1}>
+                  {c.last_body ? `${c.last_from_me ? 'You: ' : ''}${c.last_body}` : 'You caught each other. Say hi 👋'}
                 </Text>
               </View>
-              <Text style={styles.when}>Caught {timeAgo(m.matched_at)}</Text>
+              {c.unread > 0 ? (
+                <View style={styles.unread}>
+                  <Text style={styles.unreadText}>{c.unread > 9 ? '9+' : c.unread}</Text>
+                </View>
+              ) : null}
             </Pressable>
           ))}
         </View>
@@ -76,13 +93,18 @@ const styles = StyleSheet.create({
   empty: { marginVertical: 24, gap: 6 },
   emptyTitle: { fontFamily: fonts.bodyHeavy, fontSize: 20, color: colors.ink },
   body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.inkSoft },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  tile: { width: '48%', backgroundColor: colors.white, borderRadius: 14, padding: 8, borderWidth: 2, borderColor: colors.lensPink },
-  photo: { width: '100%', aspectRatio: 1, borderRadius: 10, backgroundColor: '#EEE' },
+  list: { gap: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.white, borderRadius: 14, padding: 10, borderWidth: 2, borderColor: colors.screenEdge },
+  rowUnread: { borderColor: colors.lensPink, backgroundColor: '#FFF0F5' },
+  photo: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#EEE', borderWidth: 2, borderColor: colors.lensPink },
   photoEmpty: { backgroundColor: colors.screenEdge, alignItems: 'center', justifyContent: 'center' },
-  no: { fontFamily: fonts.pixel, fontSize: 9, color: colors.inkSoft, marginTop: 6 },
-  name: { fontFamily: fonts.bodyHeavy, fontSize: 16, color: colors.ink },
-  badge: { alignSelf: 'flex-start', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, marginTop: 3, maxWidth: '100%' },
+  topLine: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 },
+  name: { fontFamily: fonts.bodyHeavy, fontSize: 16, color: colors.ink, flexShrink: 1 },
+  when: { fontFamily: fonts.body, fontSize: 11, color: colors.inkSoft },
+  badge: { alignSelf: 'flex-start', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, marginTop: 2, maxWidth: '100%' },
   badgeText: { fontFamily: fonts.pixelBold, fontSize: 8, color: colors.white, letterSpacing: 0.5 },
-  when: { fontFamily: fonts.body, fontSize: 12, color: colors.inkSoft, marginTop: 4 },
+  preview: { fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, marginTop: 4 },
+  previewUnread: { fontFamily: fonts.bodyBold, color: colors.ink },
+  unread: { minWidth: 24, height: 24, borderRadius: 12, backgroundColor: colors.luvRed, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
+  unreadText: { fontFamily: fonts.bodyHeavy, fontSize: 12, color: colors.white },
 });

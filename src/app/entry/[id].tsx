@@ -71,7 +71,10 @@ export default function EntryScreen() {
           {entry && matched ? (
             <View style={styles.matchedBox}>
               <Text style={styles.matchedTitle}>💞 You caught each other</Text>
-              <Text style={styles.matchedText}>Chat arrives in the next update. For now, say hi in person!</Text>
+              <ShellButton
+                label={`💬 Chat with ${entry.first_name}`}
+                onPress={() => router.push({ pathname: '/chat/[matchId]', params: { matchId: entry.match_id! } })}
+              />
             </View>
           ) : null}
           <ShellButton variant="ghost" label="← Back" onPress={back} />
@@ -217,8 +220,8 @@ const styles = StyleSheet.create({
   gone: { marginVertical: 30, gap: 6 },
   goneTitle: { fontFamily: fonts.bodyHeavy, fontSize: 20, color: colors.ink },
   body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.inkSoft },
-  matchedBox: { backgroundColor: colors.white, borderRadius: 16, padding: 14, alignItems: 'center', gap: 4 },
-  matchedTitle: { fontFamily: fonts.bodyHeavy, fontSize: 18, color: colors.luvRed },
+  matchedBox: { backgroundColor: colors.white, borderRadius: 16, padding: 14, gap: 10 },
+  matchedTitle: { fontFamily: fonts.bodyHeavy, fontSize: 18, color: colors.luvRed, textAlign: 'center' },
   matchedText: { fontFamily: fonts.bodySemi, fontSize: 14, color: colors.ink, textAlign: 'center' },
   safety: { marginTop: 18, paddingTop: 12, borderTopWidth: 2, borderTopColor: colors.screenEdge },
   safetyRow: { flexDirection: 'row', justifyContent: 'center', gap: 22 },
