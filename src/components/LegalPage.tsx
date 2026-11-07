@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, fonts } from '@/lib/theme';
 
-export const CONTACT_EMAIL = 'adarsh6455@gmail.com';
+export const CONTACT_EMAIL = 'sales@solutionandnetwork.com';
 export const LAST_UPDATED = '7 November 2026';
 
 export type LegalSection = { heading: string; paragraphs?: string[]; bullets?: string[] };
