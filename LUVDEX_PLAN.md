@@ -461,7 +461,7 @@ You do the account setup and dashboard clicks; I write and configure the code. S
 | **1. Entries** ✅ *done 7 Nov 2026* | Sign-up steps, photo upload (1–4), edit profile, units, delete account | You and a friend both have complete Entries |
 | **2. Radar** ✅ *done 7 Nov 2026* | Location sharing, map, nearest 5, distance bands, Scanner settings, visibility band, Ghost mode | Two phones 200 m apart see each other, and changing filters or bands hides them correctly |
 | **3. Luvballs** ✅ *done 7 Nov 2026* | Throw (50 m + grace window), anonymous delayed alerts, matching, Caught list, block, report | Two phones within 50 m throw at each other and both get "It's a match" |
-| **4. Chat & safety polish** | Chat, unmatch, web push, rate limits, anti-teleport, legal pages, simple admin (Supabase dashboard) for reports and bans | The going-live checklist passes |
+| **4. Chat & safety polish** 🟡 *built 7 Nov 2026: chat and push confirmed on real phones; delete-account test and launch settings still open* | Chat, unmatch, web push, rate limits, anti-teleport, legal pages, simple admin (Supabase dashboard) for reports and bans | The going-live checklist passes |
 | **5. Soft launch** | Launch in **one place**: a college campus, a neighbourhood, or an event | 50–200 real users and their feedback collected |
 | **6. Android app** | Same code as a native app, free native maps, native push, fake-GPS detection | Live on Google Play |
 | **7. iPhone app** | Sign in with Apple, App Store review demo mode | Live on the App Store |
