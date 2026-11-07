@@ -25,8 +25,8 @@ export function RadarMap(props: RadarViewProps) {
         <Map
           mapId={MAP_ID}
           defaultCenter={center}
-          defaultZoom={16}
-          minZoom={14}
+          defaultZoom={15}
+          minZoom={13}
           maxZoom={19}
           gestureHandling="greedy"
           disableDefaultUI
@@ -85,6 +85,7 @@ export function RadarMap(props: RadarViewProps) {
 }
 
 const meStyle = {
+  boxSizing: 'border-box',
   width: 28,
   height: 28,
   borderRadius: 14,
@@ -99,6 +100,7 @@ const meStyle = {
 } as const;
 
 const personStyle = {
+  boxSizing: 'border-box',
   width: 34,
   height: 34,
   borderRadius: 17,
