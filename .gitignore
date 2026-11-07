@@ -40,3 +40,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Firebase config for Android notifications (provided to builds via Expo environment variables)
+google-services.json
+GoogleService-Info.plist

@@ -4,14 +4,14 @@ const sections: LegalSection[] = [
   {
     heading: 'Who we are',
     paragraphs: [
-      `Luvdex ("we", "us") is a location-based dating service available at luvdex.vercel.app and, later, as Android and iOS apps. You can contact us at ${CONTACT_EMAIL}.`,
+      `Luvdex ("we", "us") is a location-based dating service available at www.luvdex.com and as Android and iOS apps. You can contact us at ${CONTACT_EMAIL}.`,
       'Luvdex is being built in stages. This policy covers the features that exist today and the ones we are building. A feature that is not live yet collects nothing until it launches.',
     ],
   },
   {
     heading: 'Information we collect',
     bullets: [
-      'Account information from Google when you sign in: your name, email address and profile picture.',
+      'Account information from Google or Apple when you sign in: your name and email address (Apple lets you hide your real email), and your Google profile picture.',
       'Profile information you choose to add: first name, date of birth, gender, what you are looking for, 1 to 4 photos, height, weight, education, work, a short bio, interests, languages, drinking and smoking habits.',
       'Your settings: filters (age, height, weight, relationship type), your visibility distance range and Ghost mode.',
       'Location: your precise location, only while you use the Radar. We keep only your latest position, never a history.',
@@ -27,7 +27,7 @@ const sections: LegalSection[] = [
       'To create and run your account and show your profile ("Entry") to people near you who match your preferences and whose preferences you match.',
       'To work out who is nearby, check that a Luvball was thrown within 50 m, and create matches.',
       'To send notifications, such as "Someone nearby threw a Luvball at you", a new match or a new message.',
-      'To keep people safe: enforcing blocks, reviewing reports, detecting fake accounts and location spoofing, and enforcing our Terms.',
+      'To keep people safe: enforcing blocks, reviewing reports, automatically refusing profile text and messages that contain banned words, detecting fake accounts and faked locations, and enforcing our Terms.',
       'To fix bugs and improve Luvdex.',
     ],
     paragraphs: ['We do not sell your personal information, and we do not use it for third-party advertising.'],
@@ -65,7 +65,7 @@ const sections: LegalSection[] = [
       'Luvballs: deleted after they expire (7 days).',
       'Profile, matches and messages: kept until you delete them or your account.',
       'Reports and safety records: kept as long as needed to protect users and meet legal obligations.',
-      'When you delete your account, we delete your profile, photos, location, Luvballs, matches and messages, except for what we must keep by law.',
+      'When you delete your account, we delete your profile, photos, location, Luvballs, matches and messages, except for what we must keep by law. How to delete your account: www.luvdex.com/delete-account.',
     ],
   },
   {

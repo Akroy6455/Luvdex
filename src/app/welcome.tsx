@@ -1,11 +1,12 @@
 import { Link, Redirect } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
+import { AppleSignInButton } from '@/components/AppleSignInButton';
 import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
 import { Luvball } from '@/components/Luvball';
-import { signInWithGoogle, useAuth } from '@/lib/auth';
+import { SignInCancelled, signInWithApple, signInWithGoogle, useAuth } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { colors, fonts } from '@/lib/theme';
 
@@ -16,13 +17,16 @@ export default function Welcome() {
 
   if (session) return <Redirect href="/" />;
 
-  const onGoogle = async () => {
+  const run = async (signIn: () => Promise<void>) => {
     setError(null);
     setBusy(true);
     try {
-      await signInWithGoogle(); // the browser leaves for Google here
+      await signIn(); // website: the browser leaves for Google here; apps: a sign-in sheet opens
+      if (Platform.OS !== 'web') setBusy(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Sign-in failed. Please try again.');
+      if (!(e instanceof SignInCancelled)) {
+        setError(e instanceof Error ? e.message : 'Sign-in failed. Please try again.');
+      }
       setBusy(false);
     }
   };
@@ -31,10 +35,11 @@ export default function Welcome() {
     <DeviceFrame
       footer={
         <>
+          <AppleSignInButton onPress={() => run(signInWithApple)} disabled={busy || !isSupabaseConfigured} />
           <ShellButton
             variant="google"
             label="Continue with Google"
-            onPress={onGoogle}
+            onPress={() => run(signInWithGoogle)}
             busy={busy}
             disabled={!isSupabaseConfigured}
           />

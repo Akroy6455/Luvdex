@@ -19,13 +19,14 @@ export type RadarStatus =
   | 'locating' // waiting for the first fix
   | 'slow' // still no fix after a while (indoors, weak signal)
   | 'low_accuracy' // location too vague (typical on laptops / indoors)
+  | 'fake_gps' // the phone says the location is faked (mock-location / spoofing app)
   | 'ghost' // Ghost mode is on
   | 'active'
   | 'error';
 
 export type MyPosition = { lat: number; lng: number; accuracy: number };
 
-type Fix = { coords: { latitude: number; longitude: number; accuracy: number | null } };
+type Fix = { coords: { latitude: number; longitude: number; accuracy: number | null }; mocked?: boolean };
 
 const SEND_EVERY_MS = 30_000;
 const SEND_AFTER_MOVING_M = 25;
@@ -68,6 +69,12 @@ export function useRadar({ enabled }: { enabled: boolean }) {
   const handlePosition = useCallback(
     async (pos: Fix) => {
       gotFix.current = true;
+      // Phone apps: a faked location is never sent to the server.
+      if (pos.mocked) {
+        setMe(null);
+        setStatus('fake_gps');
+        return;
+      }
       const accuracy = pos.coords.accuracy ?? 9999;
       const next = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy };
       setMe(next);

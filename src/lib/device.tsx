@@ -1,5 +1,5 @@
-// "Max 2 accounts per device": a random device ID kept on this phone/browser,
-// registered with the server after every sign-in.
+// "Max 2 accounts per device": a device ID registered with the server after every sign-in.
+// Phone apps use the phone's own app ID; the website keeps a random ID in the browser.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
@@ -35,8 +35,29 @@ async function writeStored(value: string) {
 
 let cached: string | null = null;
 
+/**
+ * Phone apps: the phone's own ID for this app, which survives uninstalling and
+ * reinstalling (Android ID; iPhone "identifier for vendor"). Null on the website.
+ */
+async function phoneAppId(): Promise<string | null> {
+  if (Platform.OS === 'web') return null;
+  try {
+    const Application = await import('expo-application');
+    const raw = Platform.OS === 'android' ? Application.getAndroidId() : await Application.getIosIdForVendorAsync();
+    const clean = raw?.replace(/[^A-Za-z0-9-]/g, '');
+    return clean && clean.length >= 8 ? `${Platform.OS}-${clean}`.slice(0, 64) : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getDeviceId(): Promise<string> {
   if (cached) return cached;
+  const fromPhone = await phoneAppId();
+  if (fromPhone && /^[A-Za-z0-9-]{16,64}$/.test(fromPhone)) {
+    cached = fromPhone;
+    return fromPhone;
+  }
   const stored = await readStored();
   if (stored && /^[A-Za-z0-9-]{16,64}$/.test(stored)) {
     cached = stored;

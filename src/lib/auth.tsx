@@ -2,6 +2,8 @@ import type { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Platform } from 'react-native';
 
+import { nativeAppleSignIn, nativeGoogleSignIn, nativeSignOut } from './nativeSignIn';
+import { forgetPushForThisDevice } from './push';
 import { initialAuthError, supabase } from './supabase';
 
 type AuthState = {
@@ -36,11 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export const useAuth = () => useContext(AuthContext);
 
+export { SignInCancelled, appleSignInAvailable } from './nativeSignIn';
+
 export async function signInWithGoogle() {
   if (!supabase) throw new Error('Luvdex is not connected to Supabase yet.');
   if (Platform.OS !== 'web') {
-    // Native Google sign-in (@react-native-google-signin + signInWithIdToken) arrives with the phone apps.
-    throw new Error('Phone-app sign-in is coming later. Please use the website for now.');
+    await nativeGoogleSignIn(); // the phone's own Google account picker
+    return;
   }
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -49,6 +53,13 @@ export async function signInWithGoogle() {
   if (error) throw error;
 }
 
+/** iPhone app only (Apple requires it next to Google sign-in). */
+export async function signInWithApple() {
+  await nativeAppleSignIn();
+}
+
 export async function signOut() {
+  await forgetPushForThisDevice(); // so this device stops getting the old account's alerts
   await supabase?.auth.signOut();
+  if (Platform.OS !== 'web') await nativeSignOut();
 }

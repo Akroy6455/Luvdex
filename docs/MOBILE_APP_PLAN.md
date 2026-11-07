@@ -74,6 +74,20 @@ Click-by-click steps are in [PHASE6_APP_SETUP.md](PHASE6_APP_SETUP.md). Overview
 
 ## 4. What I build (code changes)
 
+> **Progress (8 Nov 2026): step 6.2 built.** Everything below is in the code except where marked ⏳.
+> - ✅ Native Google sign-in + Sign in with Apple (iPhone), Apple button only on iPhone
+> - ✅ Radar map: Google Maps (Android, once the Android Maps key is set) / Apple Maps (iPhone)
+> - ✅ Location permission text, foreground only; microphone and background location blocked
+> - ✅ Fake-location detection (Android and iPhone report it; the Radar refuses to use it)
+> - ✅ Phone notifications: token list, sender updated (live), tap opens the right screen
+> - ✅ Device limit uses the phone's own app ID
+> - ✅ Content filter on names, bios, work/school and chat (live; admin word list in ADMIN_GUIDE §4c)
+> - ✅ Public page www.luvdex.com/delete-account; privacy policy updated
+> - ✅ Luvdex app icon, Android adaptive + themed icons, splash, notification icon; `app.config.js` + `eas.json`
+> - ⏳ Reviewer sign-in + demo Entries (§4.1): next, before store submission
+> - ⏳ Automatic photo moderation (§4.6): needs a moderation service key (Part F)
+> - ⏳ First real test build: needs the Expo account (setup Part C), then Firebase/Google IDs (Part F)
+
 All on the same codebase. The website keeps working throughout.
 
 ### 4.1 Sign-in

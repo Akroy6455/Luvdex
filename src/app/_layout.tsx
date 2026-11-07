@@ -12,6 +12,13 @@ import { DeviceProvider } from '@/lib/device';
 import { ProfileProvider } from '@/lib/profile';
 import { installWebAppTags, registerServiceWorker } from '@/lib/push';
 import { colors } from '@/lib/theme';
+import { useNotificationTaps } from '@/lib/useNotificationTaps';
+
+/** Phone apps: open the right screen when a notification is tapped. */
+function NotificationTaps() {
+  useNotificationTaps();
+  return null;
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -34,6 +41,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
+        <NotificationTaps />
         <DeviceProvider>
           <ProfileProvider>
             <StatusBar style="light" />

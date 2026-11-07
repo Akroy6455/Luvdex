@@ -72,7 +72,8 @@ select
   (select count(*) from public.matches where created_at > now() - interval '1 day') as matches_today,
   (select count(*) from public.messages where created_at > now() - interval '1 day') as messages_today,
   (select count(*) from public.reports where status = 'open') as open_reports,
-  (select count(*) from public.push_subscriptions) as devices_with_notifications;
+  (select count(*) from public.push_subscriptions) as browsers_with_notifications,
+  (select count(*) from public.push_tokens) as app_phones_with_notifications;
 ```
 
 ## 4b. Possible fake accounts
@@ -98,6 +99,27 @@ where d.last_seen > now() - interval '30 days'
 group by d.device_id having count(*) >= 2;
 ```
 
+## 4c. Blocked words (content filter)
+Names, bios, work/school and chat messages are checked against a word list. Matching is whole-word, so "grapes" or "Scunthorpe" are fine. Simple disguises like `fuuuck`, `sh1t` or `f.u.c.k` are caught too. Someone using a blocked word sees "…includes words that aren't allowed on Luvdex" and nothing is saved or sent.
+
+**See the list:**
+```sql
+select term, category from private.blocked_terms order by category, term;
+```
+**Add a word** (lowercase letters only; use a space for two-word phrases). **This changes what people can post:**
+```sql
+insert into private.blocked_terms (term, category) values ('newword', 'profanity');
+-- categories: profanity, sexual, solicitation, hate, abuse_hindi
+```
+**Remove a word that blocks normal text by mistake:**
+```sql
+delete from private.blocked_terms where term = 'word';
+```
+**Test a sentence:**
+```sql
+select private.blocked_term_in('paste a sentence here');  -- null = allowed
+```
+
 ## 5. Testing settings (restore before launch!)
 ```sql
 select key, value from private.settings;
@@ -109,7 +131,7 @@ update private.settings set value = '75' where key = 'throw_gps_max_m';
 ```
 
 ## 6. Account deletion requests by email
-If someone emails sales@solutionandnetwork.com asking to delete their account, ask them to use **Account & settings → Delete account** in the app (it removes photos, data and login). If they can't sign in, find them by email:
+The public page **www.luvdex.com/delete-account** explains the options (Google Play links to it). If someone emails sales@solutionandnetwork.com asking to delete their account, ask them to use **Account & settings → Delete account** in the app (it removes photos, data and login). If they can't sign in, find them by email:
 ```sql
 select id, email, created_at from auth.users where email = 'PASTE-EMAIL-HERE';
 ```
@@ -119,5 +141,5 @@ Then delete them in **Authentication → Users** (⋯ → Delete user). Also del
 ```sql
 select jobname, schedule, active from cron.job;  -- expect luvdex-cleanup and luvdex-push
 select status_code, left(content::text, 80) as result, created
-from net._http_response order by created desc limit 5;  -- notification sender, every 20 seconds
+from net._http_response order by created desc limit 5;  -- notification sender (website + apps), every 20 seconds
 ```

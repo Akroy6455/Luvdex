@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
 import { disablePush, enablePush, getPushState, type PushState } from '@/lib/push';
@@ -28,6 +29,11 @@ export function PushPrompt({ variant }: { variant: 'banner' | 'full' }) {
   const [dismissed, setDismissed] = useState(readDismissed);
 
   useEffect(() => {
+    if (Platform.OS !== 'web') {
+      AsyncStorage.getItem(DISMISS_KEY)
+        .then((v) => v === '1' && setDismissed(true))
+        .catch(() => undefined);
+    }
     getPushState().then(setState).catch(() => setState('unsupported'));
   }, []);
 
@@ -59,7 +65,8 @@ export function PushPrompt({ variant }: { variant: 'banner' | 'full' }) {
   const dismiss = () => {
     setDismissed(true);
     try {
-      localStorage.setItem(DISMISS_KEY, '1');
+      if (Platform.OS === 'web') localStorage.setItem(DISMISS_KEY, '1');
+      else AsyncStorage.setItem(DISMISS_KEY, '1').catch(() => undefined);
     } catch {
       // private mode: just hide for this visit
     }
@@ -80,7 +87,10 @@ export function PushPrompt({ variant }: { variant: 'banner' | 'full' }) {
       break;
     case 'denied':
       title = '🔕 Notifications are blocked';
-      text = 'Allow notifications for www.luvdex.com in your browser settings, then come back here.';
+      text =
+        Platform.OS === 'web'
+          ? 'Allow notifications for www.luvdex.com in your browser settings, then come back here.'
+          : 'Open your phone\x27s Settings → Luvdex → Notifications, turn them on, then come back here.';
       break;
     case 'subscribed':
       title = '✓ Notifications are on for this device';
@@ -89,7 +99,10 @@ export function PushPrompt({ variant }: { variant: 'banner' | 'full' }) {
       break;
     case 'unsupported':
       title = 'Notifications not available here';
-      text = "This browser doesn't support web notifications. Try Chrome on Android, or Safari on iPhone after adding Luvdex to your Home Screen.";
+      text =
+        Platform.OS === 'web'
+          ? "This browser doesn't support web notifications. Try Chrome on Android, or Safari on iPhone after adding Luvdex to your Home Screen."
+          : "This version of the app can't receive notifications yet.";
       break;
   }
 

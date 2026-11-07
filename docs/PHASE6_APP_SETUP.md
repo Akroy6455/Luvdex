@@ -103,15 +103,22 @@ A D-U-N-S number is a free company ID from Dun & Bradstreet. Apple and Google bo
 
 ---
 
-## Part F: Later, when the app code is ready (I'll tell you)
+## Part F: Later, when we make the first test build (I'll walk you through each)
 
-These come after I've made the code app-ready (step 6.2):
-- **Firebase** (free): create a project, add the Android app `app.luvdex`, upload the push key to Expo.
-- **Google Cloud:** add Android and iPhone sign-in IDs, and an Android-only Maps key.
-- **Supabase:** turn on Sign in with Apple and add the new sign-in IDs.
-- **Expo:** connect the Apple and Google accounts so Expo can build and upload.
+The app code is ready (8 Nov 2026). These connect it to the services. Each value goes into
+**expo.dev → Luvdex project → Environment variables** (or a file upload there), never into chat or the code.
 
-I'll write click-by-click steps for each when we get there.
+| What | Where you create it | Name in Expo |
+|---|---|---|
+| Expo project link | I run `eas init` once you've sent your Expo username | `EAS_PROJECT_ID`, `EXPO_OWNER` |
+| Google sign-in, web ID (already exists, public) | Google Cloud → Credentials (the one Supabase uses) | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` |
+| Google sign-in, **Android** ID | Google Cloud → Credentials → Create OAuth client → Android, package `app.luvdex` + the signing SHA-1 from Expo/Play | (nothing to copy: Google matches it automatically) |
+| Google sign-in, **iPhone** ID | Google Cloud → Credentials → Create OAuth client → iOS, bundle ID `app.luvdex` | `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` |
+| Android Maps key | Google Cloud → Credentials → API key restricted to "Android apps" (`app.luvdex` + SHA-1) and "Maps SDK for Android" | `GOOGLE_MAPS_ANDROID_KEY` |
+| Android notifications | Firebase → new project → add Android app `app.luvdex` → download **google-services.json** | File variable `GOOGLE_SERVICES_JSON` |
+| Android notification sending key | Firebase → Project settings → Service accounts → Generate new private key | Upload in Expo → Credentials → Android → FCM V1 |
+| iPhone notifications | Expo creates the Apple push key itself during the first iPhone build (answer "Yes") | — |
+| Supabase: Apple + Google IDs | Supabase → Authentication → Sign In / Providers: turn on **Apple** (add `app.luvdex` as a Client ID); in **Google**, add the iPhone ID to "Client IDs" (if iPhone Google sign-in then fails with a "nonce" error, also turn on "Skip nonce checks") | — |
 
 ---
 

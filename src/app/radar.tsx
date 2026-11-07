@@ -217,6 +217,18 @@ function StatusPanel({
           <ShellButton label="I've changed it: try again" onPress={onAllow} />
         </View>
       );
+    case 'fake_gps':
+      return (
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>Fake location detected</Text>
+          <Text style={styles.body}>
+            {'Your phone reports that its location is being faked by an app or a "mock location" setting. ' +
+              "Luvdex only works with your real location, so the Radar is off. Turn off the location-faking app " +
+              '(on Android: Settings → Developer options → "Select mock location app" → None), then try again.'}
+          </Text>
+          <ShellButton label="Try again" onPress={onAllow} />
+        </View>
+      );
     case 'ghost':
       return (
         <View style={styles.panel}>
