@@ -45,6 +45,9 @@ Both stores let you publish as an **individual** or as an **organization**.
 | Apple fee | $99/year | $99/year |
 | Google fee | $25 once | $25 once |
 
+> ✅ **Decided 8 Nov 2026: company (organization) accounts under Solution and Network.** Steps: [PHASE6_APP_SETUP.md](PHASE6_APP_SETUP.md).
+> The company must be a registered legal entity (Pvt Ltd or LLP; not a sole proprietorship). In India, Apple enrollment works only through the Apple Developer app on an iPhone, iPad or Mac.
+
 **My recommendation:** if Solution and Network is a registered company, use **organization accounts**.
 - On a dating app, your personal name as the "seller" invites unwanted contact.
 - It skips Google's 14-day test.
@@ -56,7 +59,7 @@ Apply for the D-U-N-S number first, since it's the slowest step. If the company 
 
 ## 3. Accounts you will open (your part)
 
-I'll write click-by-click steps (`docs/PHASE6_APP_SETUP.md`) once you've made the §2 choice. Overview:
+Click-by-click steps are in [PHASE6_APP_SETUP.md](PHASE6_APP_SETUP.md). Overview:
 
 1. **Expo account** (free): expo.dev, sign up with the same email as GitHub. Then I connect the project to it.
 2. **Google Play Console**: $25 one-time, card in your name (no prepaid cards). You must be 18+, verify ID, and confirm you own an Android phone using the Play Console app.
