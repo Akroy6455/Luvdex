@@ -466,8 +466,8 @@ You do the account setup and dashboard clicks; I write and configure the code. S
 | **3. Luvballs** ✅ *done 7 Nov 2026* | Throw (50 m + grace window), anonymous delayed alerts, matching, Caught list, block, report | Two phones within 50 m throw at each other and both get "It's a match" |
 | **4. Chat & safety polish** 🟡 *built 7 Nov 2026: chat and push confirmed on real phones, launch settings restored; delete-account test still open* | Chat, unmatch, web push, rate limits, anti-teleport, legal pages, simple admin (Supabase dashboard) for reports and bans | The going-live checklist passes |
 | **5. Soft launch** | Launch in **one place**: a college campus, a neighbourhood, or an event | 50–200 real users and their feedback collected |
-| **6. Android app** | Same code as a native app, free native maps, native push, fake-GPS detection | Live on Google Play |
-| **7. iPhone app** | Sign in with Apple, App Store review demo mode | Live on the App Store |
+| **6. Android app** 📋 *planned 8 Nov 2026: see [docs/MOBILE_APP_PLAN.md](docs/MOBILE_APP_PLAN.md)* | Same code as a native app, native Google sign-in, free native maps, native push, fake-GPS detection, content filter + photo moderation (moved up from Phase 8), public delete-account page, reviewer demo account | Live on Google Play |
+| **7. iPhone app** 📋 *planned: same doc* | Sign in with Apple, TestFlight, App Store review demo Entries | Live on the App Store |
 | **8. Growth** | Luvball packs, "Super Luvball", "Luv Lure" visibility boost, Verified badge, event hotspots, more genders and orientations, more languages, automatic photo moderation | — |
 
 ---
