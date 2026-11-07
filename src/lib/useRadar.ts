@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { registerDevice } from './device';
+import { supabase } from './supabase';
 import { getNearby, offsetMeters, sendLocation, type NearbyPerson } from './radar';
 
 export type RadarStatus =
@@ -56,6 +57,18 @@ export function useRadar({ enabled }: { enabled: boolean }) {
   const stopWatch = useRef<(() => void) | null>(null);
   const slowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gotFix = useRef(false);
+  const isReviewer = useRef(false);
+
+  // App-review accounts may use simulated locations (the reviewer's Simulator).
+  useEffect(() => {
+    if (Platform.OS === 'web' || !supabase) return;
+    supabase
+      .rpc('is_review_account')
+      .then(({ data }) => {
+        isReviewer.current = data === true;
+      })
+      .then(undefined, () => undefined);
+  }, []);
 
   const refreshNearby = useCallback(async () => {
     try {
@@ -69,8 +82,9 @@ export function useRadar({ enabled }: { enabled: boolean }) {
   const handlePosition = useCallback(
     async (pos: Fix) => {
       gotFix.current = true;
-      // Phone apps: a faked location is never sent to the server.
-      if (pos.mocked) {
+      // Phone apps: a faked location is never sent to the server
+      // (except for app-review accounts, which may test on a simulator).
+      if (pos.mocked && !isReviewer.current) {
         setMe(null);
         setStatus('fake_gps');
         return;

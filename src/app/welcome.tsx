@@ -55,6 +55,9 @@ export default function Welcome() {
             </Link>
             .
           </Text>
+          <Link href="/reviewer-sign-in" style={styles.reviewer}>
+            App reviewer? Sign in with email
+          </Link>
         </>
       }
     >
@@ -97,4 +100,5 @@ const styles = StyleSheet.create({
   error: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.white, textAlign: 'center' },
   legal: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, color: colors.cream, textAlign: 'center', opacity: 0.9 },
   legalLink: { fontFamily: fonts.bodyBold, textDecorationLine: 'underline', color: colors.cream },
+  reviewer: { fontFamily: fonts.body, fontSize: 12, color: colors.cream, textAlign: 'center', opacity: 0.75, textDecorationLine: 'underline' },
 });

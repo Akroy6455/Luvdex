@@ -84,7 +84,7 @@ Click-by-click steps are in [PHASE6_APP_SETUP.md](PHASE6_APP_SETUP.md). Overview
 > - ✅ Content filter on names, bios, work/school and chat (live; admin word list in ADMIN_GUIDE §4c)
 > - ✅ Public page www.luvdex.com/delete-account; privacy policy updated
 > - ✅ Luvdex app icon, Android adaptive + themed icons, splash, notification icon; `app.config.js` + `eas.json`
-> - ⏳ Reviewer sign-in + demo Entries (§4.1): next, before store submission
+> - ✅ Reviewer sign-in + demo world (§4.1): built 8 Nov 2026; your one-time setup and the store review text are in [APP_REVIEW.md](APP_REVIEW.md)
 > - ⏳ Automatic photo moderation (§4.6): needs a moderation service key (Part F)
 > - ⏳ First real test build: needs the Expo account (setup Part C), then Firebase/Google IDs (Part F)
 

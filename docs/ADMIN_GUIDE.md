@@ -120,6 +120,13 @@ delete from private.blocked_terms where term = 'word';
 select private.blocked_term_in('paste a sentence here');  -- null = allowed
 ```
 
+## 4d. App review accounts
+Setup, testing and the text for the stores: [APP_REVIEW.md](APP_REVIEW.md). Before each store submission run:
+```sql
+select private.reset_review_world();
+```
+Demo Entries are named "… (demo)" and are only ever visible to reviewer accounts. They show up in the database counts in §4, so subtract 8 from `entries`.
+
 ## 5. Testing settings (restore before launch!)
 ```sql
 select key, value from private.settings;
