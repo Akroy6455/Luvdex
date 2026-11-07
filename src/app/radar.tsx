@@ -1,9 +1,10 @@
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
+import { LocationHelp, LowAccuracyHelp } from '@/components/LocationHelp';
 import { MatchCelebration } from '@/components/MatchCelebration';
 import { PushPrompt } from '@/components/PushPrompt';
 import { RadarMap } from '@/components/RadarMap';
@@ -212,10 +213,8 @@ function StatusPanel({
       return (
         <View style={styles.panel}>
           <Text style={styles.panelTitle}>Your location is too rough</Text>
-          <Text style={styles.body}>
-            {accuracy ? `It's only accurate to about ${Math.round(accuracy)} m. ` : ''}The Radar needs your phone's GPS. Open
-            www.luvdex.com on your phone, ideally outdoors or near a window. Laptops usually can't give a precise location.
-          </Text>
+          <LowAccuracyHelp accuracy={accuracy} />
+          <ShellButton label="I've changed it: try again" onPress={onAllow} />
         </View>
       );
     case 'ghost':
@@ -240,34 +239,6 @@ function StatusPanel({
     default:
       return null;
   }
-}
-
-/** Step-by-step fixes for blocked or missing location, for the phone being used. */
-function LocationHelp() {
-  const ua = Platform.OS === 'web' && typeof navigator !== 'undefined' ? navigator.userAgent : '';
-  const iPhone = /iPhone|iPad|iPod/.test(ua);
-  const steps = iPhone
-    ? [
-        'Open the Settings app → Privacy & Security → Location Services, and make sure it is ON.',
-        'On the same screen, scroll down to "Safari Websites" → choose "While Using the App", and turn on "Precise Location".',
-        'Back in Safari, tap the page menu (aA) next to www.luvdex.com → Website Settings → Location → Allow.',
-        'Reload this page and tap "Try again". (Using Luvdex from your Home Screen? Steps 1–2 apply to it too.)',
-      ]
-    : [
-        "Turn on your phone's Location (swipe down from the top of the screen → Location).",
-        'In Chrome, tap the icon to the left of www.luvdex.com → Permissions → Location → Allow.',
-        'Reload this page and tap "Try again".',
-      ];
-  return (
-    <View style={styles.help}>
-      <Text style={styles.helpTitle}>{iPhone ? 'On iPhone:' : 'On Android:'}</Text>
-      {steps.map((s, i) => (
-        <Text key={i} style={styles.helpStep}>
-          {i + 1}. {s}
-        </Text>
-      ))}
-    </View>
-  );
 }
 
 function PersonCard({ person, onPress }: { person: NearbyPerson; onPress: () => void }) {
@@ -312,9 +283,6 @@ function NavButton({ label, onPress, badge }: { label: string; onPress: () => vo
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   headerLinks: { flexDirection: 'row', gap: 14 },
-  help: { gap: 6, backgroundColor: colors.white, borderRadius: 10, padding: 10 },
-  helpTitle: { fontFamily: fonts.bodyHeavy, fontSize: 14, color: colors.ink },
-  helpStep: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.ink },
   contestBanner: { marginBottom: 10, padding: 12, borderRadius: 12, backgroundColor: colors.ink, gap: 4 },
   contestTitle: { fontFamily: fonts.bodyHeavy, fontSize: 15, color: colors.white },
   contestBody: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.cream },
