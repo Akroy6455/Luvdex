@@ -15,7 +15,7 @@ const androidMapsReady = Boolean(
 );
 
 export function RadarMap(props: RadarViewProps) {
-  const { me, people, onSelect } = props;
+  const { me, people, flares = [], onSelect } = props;
   if (!me || (Platform.OS === 'android' && !androidMapsReady)) return <RadarScope {...props} />;
   const center = { latitude: me.lat, longitude: me.lng };
 
@@ -24,7 +24,7 @@ export function RadarMap(props: RadarViewProps) {
       <MapView
         style={StyleSheet.absoluteFill}
         initialRegion={{ ...center, latitudeDelta: 0.012, longitudeDelta: 0.012 }}
-        minZoomLevel={13}
+        minZoomLevel={flares.length ? 11 : 13}
         maxZoomLevel={19}
         rotateEnabled={false}
         pitchEnabled={false}
@@ -59,6 +59,19 @@ export function RadarMap(props: RadarViewProps) {
             </View>
           </Marker>
         ))}
+        {flares.map((f) => (
+          <Marker
+            key={f.flare_id}
+            coordinate={{ latitude: f.approx_lat, longitude: f.approx_lng }}
+            anchor={{ x: 0.5, y: 0.5 }}
+            zIndex={3}
+            onPress={() => onSelect(f.user_id)}
+          >
+            <View style={styles.flare}>
+              <Text style={styles.flareIcon}>🔥</Text>
+            </View>
+          </Marker>
+        ))}
       </MapView>
     </View>
   );
@@ -78,5 +91,16 @@ const styles = StyleSheet.create({
   },
   meHeart: { color: colors.white, fontSize: 12 },
   person: { width: 34, height: 34, borderRadius: 17, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
+  flare: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderColor: '#FF7A1A',
+    backgroundColor: '#FFF1E6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flareIcon: { fontSize: 16 },
   personHeart: { color: colors.ink, fontSize: 15 },
 });

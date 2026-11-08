@@ -17,12 +17,32 @@ export type LuvballStatus = {
   received_active: number;
   throw_range_m: number;
   contests_waiting: number;
+  flares: number; // Flares you hold now
+  flares_max: number; // 12
+  next_flare_at: string | null; // when the next monthly Flare arrives (null when full)
+  flare_radius_m: number; // 5000
+  flare_max_recipients: number; // 20
+  flare_minutes: number; // how long a Flare stays lit (60)
+  my_flare: { reached: number; expires_at: string } | null; // your Flare that is lit right now
 };
+
+export type FireFlareResult =
+  | { result: 'fired'; reached: number; remaining: number; expires_at: string }
+  | { result: 'nobody'; reached: 0; remaining: number };
 
 export type AppNotification = {
   id: string;
-  type: 'luvball_received' | 'match' | 'contest';
-  payload: { match_id?: string; user_id?: string; name?: string; contest_id?: string; title?: string; body?: string };
+  type: 'luvball_received' | 'match' | 'contest' | 'flare';
+  payload: {
+    match_id?: string;
+    user_id?: string;
+    name?: string;
+    contest_id?: string;
+    title?: string;
+    body?: string;
+    flare_id?: string;
+    distance_m?: number;
+  };
   deliver_at: string;
   read_at: string | null;
 };
@@ -68,6 +88,13 @@ export async function throwLuvball(target: string): Promise<ThrowResult> {
   const { data, error } = await client().rpc('throw_luvball', { target });
   if (error) throw friendly(error);
   return data as ThrowResult;
+}
+
+/** Light a Flare: shows your approximate location and Entry to nearby people for a while. */
+export async function fireFlare(): Promise<FireFlareResult> {
+  const { data, error } = await client().rpc('fire_flare');
+  if (error) throw friendly(error);
+  return data as FireFlareResult;
 }
 
 export async function getLuvballStatus(): Promise<LuvballStatus> {

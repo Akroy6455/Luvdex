@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { useAuth } from './auth';
 import { refreshPushToken } from './push';
 
-const ALLOWED = /^\/(luvballs|caught|radar|chat\/[0-9a-f-]{36}|contest\/[0-9a-f-]{36})$/;
+const ALLOWED = /^\/(luvballs|caught|radar|chat\/[0-9a-f-]{36}|contest\/[0-9a-f-]{36}|entry\/[0-9a-f-]{36})$/;
 
 function open(response: Notifications.NotificationResponse | null | undefined) {
   const url = response?.notification.request.content.data?.url;

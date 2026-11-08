@@ -137,6 +137,22 @@ export default function Luvballs() {
         {buyMsg ? <Text style={styles.hint}>{buyMsg}</Text> : null}
       </View>
 
+      {/* Flares */}
+      {status ? (
+        <View style={styles.card}>
+          <Text style={styles.big}>{`🔥 ${status.flares} of ${status.flares_max} Flares`}</Text>
+          <Text style={styles.body}>
+            {`A Flare shows your approximate location and Entry to up to ${status.flare_max_recipients} people within ` +
+              `${Math.round(status.flare_radius_m / 100) / 10} km for ${status.flare_minutes} minutes. Fire one from the Radar. `}
+            {status.flares >= status.flares_max
+              ? 'You have the maximum.'
+              : status.next_flare_at
+                ? `+1 free Flare on ${new Date(status.next_flare_at).toLocaleDateString([], { day: 'numeric', month: 'short' })}.`
+                : 'You get 1 free Flare every month.'}
+          </Text>
+        </View>
+      ) : null}
+
       {/* Referral */}
       <View style={[styles.card, styles.referral]}>
         <Text style={styles.cardTitle}>🎁 Invite friends, earn coins</Text>

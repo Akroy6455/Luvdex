@@ -71,6 +71,7 @@ select
   (select count(*) from private.throw_log where thrown_at > now() - interval '1 day') as luvballs_today,
   (select count(*) from public.matches where created_at > now() - interval '1 day') as matches_today,
   (select count(*) from public.messages where created_at > now() - interval '1 day') as messages_today,
+  (select count(*) from public.flares where created_at > now() - interval '1 day') as flares_today,
   (select count(*) from public.reports where status = 'open') as open_reports,
   (select count(*) from public.push_subscriptions) as browsers_with_notifications,
   (select count(*) from public.push_tokens) as app_phones_with_notifications;
@@ -136,6 +137,9 @@ select key, value from private.settings;
 | `throw_range_m` | 50 | How close (metres) you must be to throw a Luvball |
 | `location_max_accuracy_m` | 100000 | Roughest location the Radar accepts. 100000 = any location is used as if exact (owner decision, 8 Nov 2026) |
 | `throw_gps_max_m` | 100000 | Roughest location you can throw from. 100000 = no limit (owner decision, 8 Nov 2026) |
+| `flare_radius_m` | 5000 | How far a Flare reaches (metres) |
+| `flare_max_recipients` | 20 | Most people one Flare reaches (nearest first) |
+| `flare_minutes` | 60 | How long a Flare stays lit |
 
 **Make it strict again** (only if rough locations cause problems, e.g. people throwing from far away):
 ```sql

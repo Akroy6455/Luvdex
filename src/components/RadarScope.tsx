@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { lookingForColor } from '@/lib/entry';
-import { offsetMeters, type NearbyPerson } from '@/lib/radar';
+import { offsetMeters, type FlareSpot, type NearbyPerson } from '@/lib/radar';
 import type { MyPosition } from '@/lib/useRadar';
 import { colors, fonts } from '@/lib/theme';
 
 export type RadarViewProps = {
   me: MyPosition | null;
   people: NearbyPerson[];
+  /** Flares that reached you (can be up to 5 km away). */
+  flares?: FlareSpot[];
   onSelect: (userId: string) => void;
 };
 

@@ -69,6 +69,7 @@ Supporting rules (my recommended defaults):
 | Gold coins | **Start with 100; 300 coins = 1 Luvball** | First step towards paid "coin packs" |
 | Referrals | **Friend enters your email at sign-up: +100 coins each** (inviter capped at 20 per 30 days) | Growth, with anti-farming limits |
 | Luvball contests | **2+ Luvballs at the same person within 1 hour → anonymous rock-paper-scissors.** Later throwers play each other first; the winner challenges the first thrower, who must accept within 5 min (reject or no answer = forfeit). 5 min per move; missing a move = lose; tie = replay. Loser's Luvball is voided (throw again to re-enter). If she throws back at a contestant, it's an instant match and contests end. *(owner decision 7 Nov 2026)* | Adds game tension; rivals stay anonymous |
+| Flares | **Start with 1, +1 free per month, max 12.** Firing one shows your approximate location (~50 m rounding) and your Entry to up to **20** opposite-gender people within **5 km** (nearest first) for **1 hour**, with a notification. One lit at a time; not used up if nobody is in range; blocked, paused and banned accounts excluded. *(owner decision 8 Nov 2026; radius, count and duration are settings)* | Lets people be found beyond the 500 m Radar |
 | Same person | One active Luvball per person | No pestering |
 
 ### 1.6 Blocking and reporting

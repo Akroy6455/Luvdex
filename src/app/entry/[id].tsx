@@ -11,7 +11,7 @@ import { ThrowPanel } from '@/components/ThrowPanel';
 import { useAuth } from '@/lib/auth';
 import { REPORT_REASONS, blockUser, reportUser, unmatch, type ReportReason, type ThrowResult } from '@/lib/luvballs';
 import { useProfile } from '@/lib/profile';
-import { BAND_LABEL, getEntry, type OtherEntry } from '@/lib/radar';
+import { BAND_LABEL, distanceAway, getEntry, minutesLeft, type OtherEntry } from '@/lib/radar';
 import { colors, fonts } from '@/lib/theme';
 
 type Panel = null | 'block' | 'report' | 'unmatch';
@@ -94,6 +94,11 @@ export default function EntryScreen() {
           {entry.distance_band ? (
             <Text style={[styles.band, entry.in_range && styles.bandInRange]}>
               {entry.in_range ? '♥ Within Luvball range' : BAND_LABEL[entry.distance_band]}
+            </Text>
+          ) : null}
+          {entry.flare ? (
+            <Text style={styles.flare}>
+              {`🔥 Fired a Flare · ${distanceAway(entry.flare.distance_m)} · ${minutesLeft(entry.flare.expires_at)}`}
             </Text>
           ) : null}
           <EntryCard profile={entry} photos={entry.photos} units={profile?.units ?? 'metric'} />
@@ -216,6 +221,17 @@ function Confirm({
 const styles = StyleSheet.create({
   kicker: { fontFamily: fonts.pixel, fontSize: 11, color: colors.inkSoft, letterSpacing: 1, marginBottom: 8 },
   band: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.inkSoft, marginBottom: 10 },
+  flare: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
+    color: colors.ink,
+    backgroundColor: '#FFF1E6',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
   bandInRange: { color: colors.luvRed },
   gone: { marginVertical: 30, gap: 6 },
   goneTitle: { fontFamily: fonts.bodyHeavy, fontSize: 20, color: colors.ink },

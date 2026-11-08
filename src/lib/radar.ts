@@ -42,6 +42,34 @@ export type EntryView = {
   smoking: Habit | null;
 };
 
+/** Someone nearby who lit a Flare that reached you. */
+export type FlareSpot = {
+  flare_id: string;
+  user_id: string;
+  first_name: string;
+  age: number;
+  looking_for: LookingFor;
+  photo_path: string | null;
+  photo_url: string | null;
+  approx_lat: number;
+  approx_lng: number;
+  distance_m: number;
+  expires_at: string;
+};
+
+/** "Less than 100 m away", "About 350 m away", "About 1.8 km away". */
+export function distanceAway(m: number) {
+  if (m < 100) return 'Less than 100 m away';
+  if (m < 1000) return `About ${Math.round(m / 10) * 10} m away`;
+  return `About ${(m / 1000).toFixed(1)} km away`;
+}
+
+/** "45 min left" */
+export function minutesLeft(iso: string) {
+  const mins = Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
+  return mins >= 60 ? `${Math.floor(mins / 60)} h ${mins % 60} min left` : `${mins} min left`;
+}
+
 export type OtherEntry = EntryView & {
   id: string;
   distance_band: DistanceBand | null;
@@ -52,6 +80,8 @@ export type OtherEntry = EntryView & {
   gps_ok: boolean;
   thrown_by_me: boolean;
   match_id: string | null;
+  /** Set while this person's Flare (which reached you) is lit. */
+  flare: { distance_m: number; expires_at: string } | null;
   photos: { id: string; storage_path: string; position: number; url: string | null }[];
 };
 
@@ -105,6 +135,14 @@ export async function getNearby(): Promise<NearbyPerson[]> {
   const { data, error } = await client().rpc('get_nearby');
   if (error) throw error;
   const rows = (data ?? []) as Omit<NearbyPerson, 'photo_url'>[];
+  const urls = await signedUrls(rows.map((r) => r.photo_path).filter((p): p is string => !!p));
+  return rows.map((r) => ({ ...r, photo_url: r.photo_path ? urls[r.photo_path] ?? null : null }));
+}
+
+export async function getFlares(): Promise<FlareSpot[]> {
+  const { data, error } = await client().rpc('get_flares');
+  if (error) throw error;
+  const rows = (data ?? []) as Omit<FlareSpot, 'photo_url'>[];
   const urls = await signedUrls(rows.map((r) => r.photo_path).filter((p): p is string => !!p));
   return rows.map((r) => ({ ...r, photo_url: r.photo_path ? urls[r.photo_path] ?? null : null }));
 }

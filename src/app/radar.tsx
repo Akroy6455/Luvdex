@@ -1,9 +1,10 @@
 import { Redirect, router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
+import { FlareControl, FlaresNearby } from '@/components/FlarePanel';
 import { LocationHelp, LowAccuracyHelp } from '@/components/LocationHelp';
 import { MatchCelebration } from '@/components/MatchCelebration';
 import { PushPrompt } from '@/components/PushPrompt';
@@ -11,7 +12,7 @@ import { RadarMap } from '@/components/RadarMap';
 import { useAuth } from '@/lib/auth';
 import { LOOKING_FOR, labelOf, lookingForColor, updateProfile } from '@/lib/entry';
 import { useProfile } from '@/lib/profile';
-import { BAND_LABEL, clearMyLocation, type NearbyPerson } from '@/lib/radar';
+import { BAND_LABEL, clearMyLocation, getFlares, type FlareSpot, type NearbyPerson } from '@/lib/radar';
 import { colors, fonts } from '@/lib/theme';
 import { useNotifications } from '@/lib/useNotifications';
 import { useRadar } from '@/lib/useRadar';
@@ -30,6 +31,24 @@ export default function Radar() {
   const radar = useRadar({ enabled: !!profile?.onboarding_done && !ghost });
   const notes = useNotifications(!!profile?.onboarding_done);
   const [ghostBusy, setGhostBusy] = useState(false);
+  const [flares, setFlares] = useState<FlareSpot[]>([]);
+  const radarOn = radar.status === 'active' || radar.status === 'low_accuracy';
+
+  // Flares that reached you, refreshed while the Radar is on.
+  useEffect(() => {
+    if (!radarOn) return;
+    let alive = true;
+    const load = () =>
+      getFlares()
+        .then((list) => alive && setFlares(list))
+        .catch(() => undefined);
+    load();
+    const t = setInterval(load, 30_000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [radarOn]);
 
   if (!loading && !session) return <Redirect href="/welcome" />;
   if (!profileLoading && session && !profile?.onboarding_done) return <Redirect href="/onboarding" />;
@@ -109,9 +128,9 @@ export default function Radar() {
         </Pressable>
       ) : null}
 
-      {radar.status === 'active' || radar.status === 'low_accuracy' ? (
-        <RadarMap me={radar.me} people={radar.people} onSelect={open} />
-      ) : null}
+      {radar.status === 'active' ? <FlareControl /> : null}
+
+      {radarOn ? <RadarMap me={radar.me} people={radar.people} flares={flares} onSelect={open} /> : null}
 
       {radar.status === 'active' && radar.me && radar.me.accuracy > ROUGH_TIP_AFTER_M ? (
         <Text style={styles.roughTip}>
@@ -144,6 +163,8 @@ export default function Radar() {
           </View>
         )
       ) : null}
+
+      {radarOn ? <FlaresNearby flares={flares} onOpen={open} /> : null}
 
       <MatchCelebration
         visible={!!notes.pendingMatch}

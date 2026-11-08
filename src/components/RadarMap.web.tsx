@@ -16,7 +16,7 @@ const MAP_ID = process.env.EXPO_PUBLIC_GOOGLE_MAP_ID || 'DEMO_MAP_ID';
 export function RadarMap(props: RadarViewProps) {
   const [failed, setFailed] = useState(false);
   if (!API_KEY || failed || !props.me) return <RadarScope {...props} />;
-  const { me, people, onSelect } = props;
+  const { me, people, flares = [], onSelect } = props;
   const center = { lat: me.lat, lng: me.lng };
 
   return (
@@ -26,7 +26,7 @@ export function RadarMap(props: RadarViewProps) {
           mapId={MAP_ID}
           defaultCenter={center}
           defaultZoom={15}
-          minZoom={13}
+          minZoom={flares.length ? 11 : 13}
           maxZoom={19}
           gestureHandling="greedy"
           disableDefaultUI
@@ -78,6 +78,17 @@ export function RadarMap(props: RadarViewProps) {
               </div>
             </AdvancedMarker>
           ))}
+          {flares.map((f) => (
+            <AdvancedMarker
+              key={f.flare_id}
+              position={{ lat: f.approx_lat, lng: f.approx_lng }}
+              title={`🔥 ${f.first_name}, ${f.age}`}
+              onClick={() => onSelect(f.user_id)}
+              zIndex={3}
+            >
+              <div style={flareStyle}>🔥</div>
+            </AdvancedMarker>
+          ))}
         </Map>
       </APIProvider>
     </View>
@@ -112,6 +123,21 @@ const personStyle = {
   justifyContent: 'center',
   fontSize: 15,
   cursor: 'pointer',
+} as const;
+
+const flareStyle = {
+  boxSizing: 'border-box',
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  background: '#FFF1E6',
+  border: '3px solid #FF7A1A',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: 17,
+  cursor: 'pointer',
+  boxShadow: '0 0 12px rgba(255,122,26,0.6)',
 } as const;
 
 const styles = StyleSheet.create({
