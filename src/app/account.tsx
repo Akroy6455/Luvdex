@@ -6,6 +6,7 @@ import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
 import { PushPrompt } from '@/components/PushPrompt';
 import { ErrorText, FieldLabel, Segmented, TextField } from '@/components/Form';
+import { isAdmin } from '@/lib/admin';
 import { signOut, useAuth } from '@/lib/auth';
 import { deleteMyAccount, updateProfile, type Units } from '@/lib/entry';
 import { getBlocked, unblockUser } from '@/lib/luvballs';
@@ -17,6 +18,14 @@ export default function Account() {
   const { profile, setProfile } = useProfile();
   const [blocked, setBlocked] = useState<{ user_id: string; first_name: string }[]>([]);
   const [unitsError, setUnitsError] = useState<string | null>(null);
+  const [admin, setAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!session) return;
+    isAdmin()
+      .then(setAdmin)
+      .catch(() => undefined);
+  }, [session]);
 
   useEffect(() => {
     if (session) getBlocked().then(setBlocked).catch(() => setBlocked([]));
@@ -75,6 +84,12 @@ export default function Account() {
             onChange={changeUnits}
           />
           <ErrorText>{unitsError}</ErrorText>
+        </View>
+      ) : null}
+
+      {admin ? (
+        <View style={styles.block}>
+          <ShellButton label="🛠  Admin panel" onPress={() => router.push('/admin')} />
         </View>
       ) : null}
 

@@ -1,5 +1,25 @@
 # Luvdex admin guide
 
+## ⭐ Use the admin panel: www.luvdex.com/admin
+Sign in to Luvdex with an admin Google account (adarsh6455@gmail.com or akroy6455@gmail.com), then open **www.luvdex.com/admin**, or tap **🛠 Admin panel** in Account & settings. It has:
+- **Dashboard:** users, activity, economy, and 14-day charts (demo and review accounts are left out).
+- **Users:** search by name, email or ID; filters (reported, banned, paused…); open anyone to **ban/unban**, change **Luvballs, Flares and coins** (±1/±5 or any amount, up to 999), hide photos, and see their reports and activity.
+- **Reports:** the queue; ban, dismiss or mark reviewed in one click. "Under 18" and "Safety" reports come first.
+- **Settings:** throw range, location limits, Flare reach/duration/people, the blocked-word list, and the review-account reset.
+- **Activity log:** every admin change, who made it and when (kept 1 year).
+
+Everything is checked on the server: non-admins get "Admins only" even if they find the page.
+
+**Add or remove an admin** (SQL Editor):
+```sql
+insert into private.admins (user_id) select id from auth.users where email = 'NEW-ADMIN@gmail.com';
+delete from private.admins where user_id = (select id from auth.users where email = 'OLD-ADMIN@gmail.com');
+```
+
+The SQL below still works if you ever need it.
+
+---
+
 Run these in **Supabase → SQL Editor**:
 https://supabase.com/dashboard/project/ydbbqtvobahlnmgavdbo/sql/new
 
