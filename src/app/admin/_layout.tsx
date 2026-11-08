@@ -1,5 +1,8 @@
 // Admin panel frame: checks you're an admin (on the server), then shows the top navigation.
-import { Link, Slot, usePathname } from 'expo-router';
+import { Link, Slot, router, usePathname } from 'expo-router';
+
+// If an admin screen crashes, show the error with a "Try again" button instead of a blank page.
+export { ErrorBoundary } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -63,18 +66,19 @@ export default function AdminLayout() {
             {TABS.map((t) => {
               const active = t.href === '/admin' ? path === '/admin' : path.startsWith(t.href) || (t.href === '/admin/users' && path.startsWith('/admin/user/'));
               return (
-                <Link key={t.href} href={t.href} asChild>
-                  <Pressable style={[styles.tab, active && styles.tabOn]}>
-                    <Text style={[styles.tabText, active && styles.tabTextOn]}>{t.label}</Text>
-                  </Pressable>
-                </Link>
+                <Pressable
+                  key={t.href}
+                  accessibilityRole="link"
+                  onPress={() => router.navigate(t.href)}
+                  style={[styles.tab, active && styles.tabOn]}
+                >
+                  <Text style={[styles.tabText, active && styles.tabTextOn]}>{t.label}</Text>
+                </Pressable>
               );
             })}
-            <Link href="/radar" asChild>
-              <Pressable style={styles.tab}>
-                <Text style={styles.tabText}>Open app ↗</Text>
-              </Pressable>
-            </Link>
+            <Pressable accessibilityRole="link" onPress={() => router.navigate('/radar')} style={styles.tab}>
+              <Text style={styles.tabText}>Open app ↗</Text>
+            </Pressable>
           </ScrollView>
         </View>
       </View>
