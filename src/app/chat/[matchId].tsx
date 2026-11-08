@@ -25,11 +25,13 @@ import {
   type Conversation,
   type Message,
 } from '@/lib/chat';
+import { useAppActive } from '@/lib/useAppActive';
 import { colors, fonts } from '@/lib/theme';
 
-const POLL_MS = 15_000; // safety net in case the live connection drops
+const POLL_MS = 30_000; // safety net in case the live connection drops
 
 export default function Chat() {
+  const active = useAppActive();
   const { matchId } = useLocalSearchParams<{ matchId: string }>();
   const { session, loading } = useAuth();
   const myId = session?.user.id;
@@ -58,8 +60,10 @@ export default function Chat() {
     }
   }, [matchId, myId, merge]);
 
+  // Live updates come through the realtime connection; the slow poll is only a safety net,
+  // and everything pauses while Luvdex is hidden.
   useEffect(() => {
-    if (!matchId || !myId) return;
+    if (!matchId || !myId || !active) return;
     getConversations()
       .then((list) => setConv(list.find((c) => c.match_id === matchId) ?? null))
       .catch(() => setConv(null));
@@ -73,7 +77,7 @@ export default function Chat() {
       unsubscribe();
       clearInterval(t);
     };
-  }, [matchId, myId, reload, merge]);
+  }, [matchId, myId, active, reload, merge]);
 
   useEffect(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);

@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { A, Btn, Card, ErrorNote, Loading, Row, Stat, s } from '@/components/admin/ui';
 import { ago, getStats, type AdminStats, type DayStat } from '@/lib/admin';
+import { useAppActive } from '@/lib/useAppActive';
 import { fonts } from '@/lib/theme';
 
 const SERIES: { key: keyof Omit<DayStat, 'day'>; label: string; color: string }[] = [
@@ -19,6 +20,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const active = useAppActive();
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -33,10 +35,11 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
+    if (!active) return;
     load();
     const t = setInterval(load, 60_000);
     return () => clearInterval(t);
-  }, [load]);
+  }, [load, active]);
 
   if (!stats) return error ? <ErrorNote text={error} /> : <Loading />;
 

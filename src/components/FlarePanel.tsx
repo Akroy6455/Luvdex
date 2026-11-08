@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { fireFlare, getLuvballStatus, type LuvballStatus } from '@/lib/luvballs';
 import { distanceAway, minutesLeft, type FlareSpot } from '@/lib/radar';
 import { colors, fonts } from '@/lib/theme';
+import { useAppActive } from '@/lib/useAppActive';
 
 const FLARE_ORANGE = '#FF7A1A';
 
@@ -15,6 +16,8 @@ export function FlareControl() {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [, setTick] = useState(0);
+  const active = useAppActive();
 
   const load = useCallback(() => {
     getLuvballStatus()
@@ -22,11 +25,21 @@ export function FlareControl() {
       .catch(() => undefined);
   }, []);
 
+  // Load when shown and whenever Luvdex comes back on screen (no repeated server calls).
   useEffect(() => {
-    load();
-    const t = setInterval(load, 60_000);
+    if (active) load();
+  }, [active, load]);
+
+  // Count down locally; reload once when a lit Flare ends.
+  useEffect(() => {
+    if (!status?.my_flare || !active) return;
+    const ends = new Date(status.my_flare.expires_at).getTime();
+    const t = setInterval(() => {
+      setTick((n) => n + 1);
+      if (Date.now() >= ends) load();
+    }, 30_000);
     return () => clearInterval(t);
-  }, [load]);
+  }, [status?.my_flare, active, load]);
 
   if (!status) return null;
   const km = Math.round(status.flare_radius_m / 100) / 10;

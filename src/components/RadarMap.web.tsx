@@ -1,7 +1,11 @@
-// Website: Google Maps (Maps JavaScript API). Falls back to the built-in radar
-// display when no API key is configured.
-import { APIProvider, AdvancedMarker, Circle, Map } from '@vis.gl/react-google-maps';
-import { useState } from 'react';
+// Website: Google Maps (Maps JavaScript API). Falls back to the free built-in radar
+// display when no API key is configured, or when Google refuses the map (key problem
+// or the daily usage cap set in Google Cloud has been reached).
+//
+// Cost: Google bills each time a map is created. `reuseMaps` keeps the map and reuses it
+// whenever the Radar is opened again, so one visit normally costs one map load.
+import { APIProvider, AdvancedMarker, Circle, Map, useMap } from '@vis.gl/react-google-maps';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { lookingForColor } from '@/lib/entry';
@@ -13,16 +17,52 @@ const API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY;
 // Advanced markers need a Map ID. Google's DEMO_MAP_ID works for testing.
 const MAP_ID = process.env.EXPO_PUBLIC_GOOGLE_MAP_ID || 'DEMO_MAP_ID';
 
+// Remembered for the whole visit, so a refused map isn't retried (and billed) again.
+let mapsRefused = false;
+
+/** A reused map keeps its old position: move it to where you are now (once, and when you move far). */
+function FollowMe({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap();
+  const last = useRef<{ lat: number; lng: number } | null>(null);
+  useEffect(() => {
+    if (!map) return;
+    const prev = last.current;
+    const movedFar = !prev || Math.abs(prev.lat - lat) > 0.002 || Math.abs(prev.lng - lng) > 0.002;
+    if (movedFar) {
+      map.panTo({ lat, lng });
+      last.current = { lat, lng };
+    }
+  }, [map, lat, lng]);
+  return null;
+}
+
 export function RadarMap(props: RadarViewProps) {
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState(mapsRefused);
+
+  // Google calls this when it refuses to show the map (bad key, wrong website, quota).
+  useEffect(() => {
+    const w = window as unknown as { gm_authFailure?: () => void };
+    w.gm_authFailure = () => {
+      mapsRefused = true;
+      setFailed(true);
+    };
+  }, []);
+
   if (!API_KEY || failed || !props.me) return <RadarScope {...props} />;
   const { me, people, flares = [], onSelect } = props;
   const center = { lat: me.lat, lng: me.lng };
 
   return (
     <View style={styles.frame}>
-      <APIProvider apiKey={API_KEY} onError={() => setFailed(true)}>
+      <APIProvider
+        apiKey={API_KEY}
+        onError={() => {
+          mapsRefused = true;
+          setFailed(true);
+        }}
+      >
         <Map
+          reuseMaps
           mapId={MAP_ID}
           defaultCenter={center}
           defaultZoom={15}
@@ -33,6 +73,7 @@ export function RadarMap(props: RadarViewProps) {
           clickableIcons={false}
           style={{ width: '100%', height: '100%' }}
         >
+          <FollowMe lat={me.lat} lng={me.lng} />
           <Circle
             center={center}
             radius={500}

@@ -6,6 +6,7 @@ import { ShellButton } from '@/components/Buttons';
 import { DeviceFrame } from '@/components/DeviceFrame';
 import { useAuth } from '@/lib/auth';
 import { getConversations, type Conversation } from '@/lib/chat';
+import { useAppActive } from '@/lib/useAppActive';
 import { LOOKING_FOR, labelOf, lookingForColor } from '@/lib/entry';
 import { timeAgo } from '@/lib/luvballs';
 import { colors, fonts } from '@/lib/theme';
@@ -14,18 +15,19 @@ import { colors, fonts } from '@/lib/theme';
 export default function Caught() {
   const { session, loading } = useAuth();
   const [items, setItems] = useState<Conversation[] | null>(null);
+  const active = useAppActive();
 
   useFocusEffect(
     useCallback(() => {
-      if (!session) return;
+      if (!session || !active) return;
       const load = () =>
         getConversations()
           .then(setItems)
           .catch(() => setItems((prev) => prev ?? []));
       load();
-      const t = setInterval(load, 20_000);
+      const t = setInterval(load, 30_000);
       return () => clearInterval(t);
-    }, [session]),
+    }, [session, active]),
   );
 
   if (!loading && !session) return <Redirect href="/welcome" />;

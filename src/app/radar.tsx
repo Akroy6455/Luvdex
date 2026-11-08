@@ -15,6 +15,7 @@ import { useProfile } from '@/lib/profile';
 import { BAND_LABEL, clearMyLocation, getFlares, type FlareSpot, type NearbyPerson } from '@/lib/radar';
 import { colors, fonts } from '@/lib/theme';
 import { useNotifications } from '@/lib/useNotifications';
+import { useAppActive } from '@/lib/useAppActive';
 import { useRadar } from '@/lib/useRadar';
 
 /** Above this, the Radar still works but shows a gentle "approximate location" tip. */
@@ -33,10 +34,11 @@ export default function Radar() {
   const [ghostBusy, setGhostBusy] = useState(false);
   const [flares, setFlares] = useState<FlareSpot[]>([]);
   const radarOn = radar.status === 'active' || radar.status === 'low_accuracy';
+  const appActive = useAppActive();
 
   // Flares that reached you, refreshed while the Radar is on.
   useEffect(() => {
-    if (!radarOn) return;
+    if (!radarOn || !appActive) return;
     let alive = true;
     const load = () =>
       getFlares()
@@ -48,7 +50,7 @@ export default function Radar() {
       alive = false;
       clearInterval(t);
     };
-  }, [radarOn]);
+  }, [radarOn, appActive]);
 
   if (!loading && !session) return <Redirect href="/welcome" />;
   if (!profileLoading && session && !profile?.onboarding_done) return <Redirect href="/onboarding" />;

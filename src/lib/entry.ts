@@ -1,6 +1,7 @@
 // Entry (profile) data: types, choices, unit helpers and Supabase calls.
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 
+import { forgetPhotoUrl, photoUrls } from './photoUrls';
 import { supabase } from './supabase';
 import { colors } from './theme';
 
@@ -187,10 +188,8 @@ export async function fetchMyPhotos(userId: string): Promise<Photo[]> {
     .order('position');
   if (error) throw error;
   if (!data.length) return [];
-  const { data: signed } = await client()
-    .storage.from('photos')
-    .createSignedUrls(data.map((p) => p.storage_path), 60 * 60);
-  return data.map((p) => ({ ...p, url: signed?.find((s) => s.path === p.storage_path)?.signedUrl ?? null }));
+  const urls = await photoUrls(data.map((p) => p.storage_path));
+  return data.map((p) => ({ ...p, url: urls[p.storage_path] ?? null }));
 }
 
 const randomId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
@@ -216,7 +215,8 @@ export async function uploadPhoto(userId: string, photo: LocalPhoto, position: n
   const path = `${userId}/${randomId()}.jpg`;
   const { error: uploadError } = await client()
     .storage.from('photos')
-    .upload(path, body, { contentType: 'image/jpeg', upsert: false });
+    // File names are random and never reused, so phones and browsers may cache them for a year.
+    .upload(path, body, { contentType: 'image/jpeg', upsert: false, cacheControl: '31536000' });
   if (uploadError) throw new Error(`Photo upload failed: ${uploadError.message}`);
   const { error } = await client().from('photos').insert({ user_id: userId, storage_path: path, position });
   if (error) {
@@ -229,6 +229,7 @@ export async function deletePhoto(photo: Pick<Photo, 'id' | 'storage_path'>) {
   const { error } = await client().from('photos').delete().eq('id', photo.id);
   if (error) throw friendlyError(error);
   await client().storage.from('photos').remove([photo.storage_path]);
+  forgetPhotoUrl(photo.storage_path);
 }
 
 export async function setPhotoOrder(photoIds: string[]) {

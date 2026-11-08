@@ -1,5 +1,6 @@
 // Luvballs, matches, in-app notifications, blocking and reporting.
 import type { LookingFor } from './entry';
+import { photoUrls } from './photoUrls';
 import { supabase } from './supabase';
 
 export type ThrowResult =
@@ -136,6 +137,20 @@ export async function getNotifications(): Promise<AppNotification[]> {
   return data as AppNotification[];
 }
 
+/** Only unread alerts, with just the fields the Radar needs (polled, so kept small). */
+export async function getUnreadNotifications(): Promise<AppNotification[]> {
+  const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+  const { data, error } = await client()
+    .from('notifications')
+    .select('id, type, payload, deliver_at, read_at')
+    .is('read_at', null)
+    .gte('deliver_at', since)
+    .order('deliver_at', { ascending: false })
+    .limit(30);
+  if (error) throw friendly(error);
+  return data as AppNotification[];
+}
+
 export async function markRead(ids: string[]) {
   if (!ids.length) return;
   await client().from('notifications').update({ read_at: new Date().toISOString() }).in('id', ids);
@@ -146,11 +161,7 @@ export async function getMatches(): Promise<Match[]> {
   if (error) throw friendly(error);
   const rows = (data ?? []) as Omit<Match, 'photo_url'>[];
   const paths = rows.map((r) => r.photo_path).filter((p): p is string => !!p);
-  const urls: Record<string, string> = {};
-  if (paths.length) {
-    const { data: signed } = await client().storage.from('photos').createSignedUrls(paths, 60 * 30);
-    for (const s of signed ?? []) if (s.path && s.signedUrl) urls[s.path] = s.signedUrl;
-  }
+  const urls = await photoUrls(paths);
   return rows.map((r) => ({ ...r, photo_url: r.photo_path ? urls[r.photo_path] ?? null : null }));
 }
 

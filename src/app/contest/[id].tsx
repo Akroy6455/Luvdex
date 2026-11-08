@@ -16,6 +16,7 @@ import {
   type Contest,
   type Move,
 } from '@/lib/contests';
+import { useAppActive } from '@/lib/useAppActive';
 import { getNotifications, markRead } from '@/lib/luvballs';
 import { colors, fonts } from '@/lib/theme';
 
@@ -23,6 +24,7 @@ const POLL_MS = 3_000;
 
 /** One rock-paper-scissors contest. Your rival stays anonymous. */
 export default function ContestScreen() {
+  const active = useAppActive();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session, loading } = useAuth();
   const [contest, setContest] = useState<Contest | null | undefined>(undefined);
@@ -41,7 +43,7 @@ export default function ContestScreen() {
   }, [id]);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session || !active) return;
     load();
     // Mark this contest's alerts as read.
     getNotifications()
@@ -55,7 +57,7 @@ export default function ContestScreen() {
       clearInterval(poll);
       clearInterval(tick);
     };
-  }, [session, id, load]);
+  }, [session, id, active, load]);
 
   if (!loading && !session) return <Redirect href="/welcome" />;
 

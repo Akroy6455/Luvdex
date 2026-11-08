@@ -1,5 +1,6 @@
 // Admin panel data. Every function here calls a database function that checks admin
 // rights on the server, so a non-admin gets "Admins only" no matter what the app does.
+import { photoUrls } from './photoUrls';
 import { supabase } from './supabase';
 
 function client() {
@@ -189,12 +190,8 @@ export const getActivity = (lim = 200) => rpc<ActivityItem[]>('admin_activity', 
 export async function getUser(id: string): Promise<AdminUserDetail | null> {
   const user = await rpc<AdminUserDetail | null>('admin_get_user', { target: id });
   if (!user) return null;
-  const paths = user.photos.map((p) => p.storage_path);
-  if (paths.length) {
-    const { data } = await client().storage.from('photos').createSignedUrls(paths, 60 * 30);
-    const map = new Map((data ?? []).map((d) => [d.path, d.signedUrl]));
-    user.photos = user.photos.map((p) => ({ ...p, url: map.get(p.storage_path) ?? null }));
-  }
+  const urls = await photoUrls(user.photos.map((p) => p.storage_path));
+  user.photos = user.photos.map((p) => ({ ...p, url: urls[p.storage_path] ?? null }));
   return user;
 }
 

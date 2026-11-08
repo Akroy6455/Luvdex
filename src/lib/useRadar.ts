@@ -10,6 +10,7 @@ import { Platform } from 'react-native';
 
 import { registerDevice } from './device';
 import { supabase } from './supabase';
+import { useAppActive } from './useAppActive';
 import { getNearby, offsetMeters, sendLocation, type NearbyPerson } from './radar';
 
 export type RadarStatus =
@@ -57,6 +58,8 @@ export function useRadar({ enabled }: { enabled: boolean }) {
   const slowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gotFix = useRef(false);
   const isReviewer = useRef(false);
+  // Hidden tab / app in the background: stop tracking location and calling the server.
+  const appActive = useAppActive();
 
   // App-review accounts may use simulated locations (the reviewer's Simulator).
   useEffect(() => {
@@ -122,7 +125,8 @@ export function useRadar({ enabled }: { enabled: boolean }) {
   const startWatching = useCallback(async () => {
     stop();
     gotFix.current = false;
-    setStatus('locating');
+    // Coming back to the app: keep showing the map while tracking restarts.
+    setStatus((s) => (s === 'active' || s === 'low_accuracy' ? s : 'locating'));
     slowTimer.current = setTimeout(() => {
       if (!gotFix.current) setStatus((s) => (s === 'locating' ? 'slow' : s));
     }, SLOW_AFTER_MS);
@@ -187,9 +191,13 @@ export function useRadar({ enabled }: { enabled: boolean }) {
       setStatus('ghost');
       return;
     }
+    if (!appActive) {
+      stop();
+      return;
+    }
     let cancelled = false;
     (async () => {
-      setStatus('checking');
+      setStatus((s) => (s === 'active' || s === 'low_accuracy' ? s : 'checking'));
       if (isWeb) {
         const state = await webPermissionState();
         if (cancelled) return;
@@ -212,14 +220,14 @@ export function useRadar({ enabled }: { enabled: boolean }) {
       cancelled = true;
       stop();
     };
-  }, [enabled, startWatching, stop]);
+  }, [enabled, appActive, startWatching, stop]);
 
   // Refresh the list regularly even when standing still (others move too).
   useEffect(() => {
-    if (status !== 'active') return;
+    if (status !== 'active' || !appActive) return;
     const t = setInterval(refreshNearby, REFRESH_EVERY_MS);
     return () => clearInterval(t);
-  }, [status, refreshNearby]);
+  }, [status, appActive, refreshNearby]);
 
   return {
     status,

@@ -1,5 +1,6 @@
 // Chat between matches: messages, conversation list, live updates.
 import type { LookingFor } from './entry';
+import { photoUrls } from './photoUrls';
 import { supabase } from './supabase';
 
 export type Message = {
@@ -38,11 +39,7 @@ export async function getConversations(): Promise<Conversation[]> {
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as Omit<Conversation, 'photo_url'>[];
   const paths = rows.map((r) => r.photo_path).filter((p): p is string => !!p);
-  const urls: Record<string, string> = {};
-  if (paths.length) {
-    const { data: signed } = await client().storage.from('photos').createSignedUrls(paths, 60 * 30);
-    for (const s of signed ?? []) if (s.path && s.signedUrl) urls[s.path] = s.signedUrl;
-  }
+  const urls = await photoUrls(paths);
   return rows.map((r) => ({ ...r, photo_url: r.photo_path ? urls[r.photo_path] ?? null : null }));
 }
 

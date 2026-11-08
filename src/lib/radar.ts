@@ -1,5 +1,6 @@
 // Radar data: talking to update_location / get_nearby / get_entry and the filter tables.
 import type { Education, Habit, LookingFor } from './entry';
+import { photoUrls } from './photoUrls';
 import { supabase } from './supabase';
 
 export type DistanceBand = 'within_50' | '50_100' | '100_250' | '250_500';
@@ -112,13 +113,8 @@ function client() {
   return supabase;
 }
 
-async function signedUrls(paths: string[]): Promise<Record<string, string>> {
-  if (!paths.length) return {};
-  const { data } = await client().storage.from('photos').createSignedUrls(paths, 60 * 30);
-  const map: Record<string, string> = {};
-  for (const item of data ?? []) if (item.path && item.signedUrl) map[item.path] = item.signedUrl;
-  return map;
-}
+// Cached signed links (see photoUrls.ts): the same photo keeps the same link, so it isn't re-downloaded.
+const signedUrls = photoUrls;
 
 export async function sendLocation(lat: number, lng: number, accuracy: number): Promise<LocationResult> {
   const { data, error } = await client().rpc('update_location', { lat, lng, accuracy });
